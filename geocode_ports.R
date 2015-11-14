@@ -22,10 +22,15 @@ for (i in 1:nrow(port_info)){
 # write out to csv for easier editing
 write.csv(port_info, 'port_info.csv')
 
+# read edited version back in.
+port_info_clean <- read.csv("port_info.csv", stringsAsFactors = FALSE)
+port_info_clean$port <- as.character(port_info$port)
+
 mapWorld$aes_params$fill <- 'white'
 mp <- ggplot() + mapWorld
-mp + geom_point(data = port_info, aes(x = lon, y = lat), alpha = .75) +
-  geom_text(data = subset(port_info, country == "United States of America"), aes(x = lon, y = lat, label = country)) + 
+mp + geom_point(data = port_info_clean, aes(x = lon, y = lat), alpha = .75) +
+  geom_text(data = port_info_clean, aes(x = lon, y = lat, label = country, color = lon)) + 
+  scale_colour_gradient(low = 'red', high = 'green') + 
   theme_bw() 
 
 mp + geom_point(data = subset(port_info, country == "United States of America"), 
