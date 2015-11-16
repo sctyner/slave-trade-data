@@ -44,4 +44,3 @@ ggplot(usa, aes(long,lat, group = group)) + geom_polygon(fill = 'white', color =
   geom_text(inherit.aes = FALSE, data =subset(port_info, country == "United States of America"), aes(x = lon, y = lat, label= port))
 
 
-read
