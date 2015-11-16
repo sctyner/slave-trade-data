@@ -14,6 +14,11 @@
 trips_interest <- data[which(data$voyageid %in% slavenet$voyageid),]
 
 slavenet <- data.frame(na.omit(slavenet))
+slavenet$from_port <- as.character(slavenet$from_port)
+undefined_dep <- c(subset(slavenet, from_port == "undefined 074")$voyageid, 
+  subset(slavenet, from_port == "undefined 405")$voyageid)
+slavenet$from_port[which(slavenet$voyageid %in% undefined_dep)] <- as.character(data[which(data$voyageid %in% undefined_dep), c("portdep")])
+
 
 vars_interest <- c("voyageid", "tslavesp", "sladafri", "sladvoy", "sladamer", "natinimp", 
                    "shipname", "datedepa", "datedepb", "datedepc", "datarr32", "datarr33", "datarr34")
@@ -28,10 +33,10 @@ summary(ship_data)
 summary(slavenet)
 
 slavenet_info <- merge(slavenet, ship_data, by = "voyageid")
-
+str(port_info_clean)
 library(dplyr)
 #slavenet_info_from <- left_join(slavenet_info, port_info_clean[,-1], by = c("from_port" = "port"))
-slavenet_info_all <- merge(slavenet_info, port_info_clean[,-1], by.x = "from_port", by.y = "port")
+slavenet_info_all <- merge(slavenet_info, port_info_clean, by.x = "from_port", by.y = "port", all = TRUE)
 
 library(lubridate)
 dates_ships_leave <- slavenet_info_all[,10:12]

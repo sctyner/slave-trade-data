@@ -9,9 +9,12 @@ for (i in 1:length(port_info)){
 }
 coord1
 
-port_info <- data.frame(port=port_info[-length(port_info)], coord1)
+port_info <- data.frame(port=port_info, coord1)
 
 library(dplyr)
+library(sp)
+library(RgoogleMaps)
+library(rworldmap)
 port_info$country <- NA
 for (i in 1:nrow(port_info)){
   if (!is.na(port_info$lat[i])){
@@ -20,7 +23,14 @@ for (i in 1:nrow(port_info)){
 }
 
 # write out to csv for easier editing
-write.csv(port_info, 'port_info.csv')
+# write.csv(port_info, 'port_info2.csv')
+
+#port_info <- port_info[-grep("undefined", as.character(port_info$port)),]
+#port_info[,c(1,3)] <- as.character(port_info[,c(1,3)])
+#port_info <- rbind(port_info, c("Hamburg", rep(NA, 4)), c("Netherlands, port undefined", rep(NA, 4)))
+
+library(magrittr)
+port_info %<>% arrange(port)
 
 # read edited version back in.
 port_info_clean <- read.csv("port_info.csv", stringsAsFactors = FALSE)
