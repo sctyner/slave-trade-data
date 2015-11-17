@@ -49,9 +49,10 @@ slavenet_info_all$date_depart <- date_departs
 slavenet_info_all$date_arrive <- date_arrives
 library(ggplot2)
 library(geomnet)
-ggplot() + 
-  geom_net(data = slavenet_info_all, ealpha = 0.5, layout = NULL, 
-           aes(from_id = from_port, to_id = to_port, x = lon, y = lat)) 
-  
+ggplot() + mapWorld + 
+  geom_net(data = slavenet_info_all, directed = TRUE, ealpha = 0.1, layout = NULL, 
+           aes(from_id = from_port, to_id = to_port, x = lon, y = lat, colour = datarr34)) 
+
+
  
   
