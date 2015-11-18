@@ -66,7 +66,7 @@
 \pretitle{\vspace{-50pt} \begin{flushleft} \HorRule \fontsize{20}{20} \usefont{OT1}{phv}{b}{n} \color{black} \selectfont} % Horizontal rule before the title
 
 \title{Vizualizing the African Slave Trade, 1514 - 1866} % Your article title
-
+ % This should probably reference geomnet. Don't want it to be too long though
 \posttitle{\par\end{flushleft}\vskip 0em} % Whitespace under the title
 
 \preauthor{\begin{flushleft}\large \vspace{-.5cm} \usefont{OT1}{phv}{b}{sl} \color{black}} % Author font configuration
@@ -93,7 +93,7 @@ Iowa State University % Your institution
 
 % The first character should be within \initial{}
 \vspace{-1cm}
-\initial{D}\textbf{o I need an abstract for this paper? If so I will put it here but I don't want to waste the space if I don't have to.}
+\initial{U}\textbf{sing a new way to visualize network data in \texttt{R} and \texttt{gglot2}, I examine the evolution of the African slave trade from the $16^{th}$ through the $19^{th}$ centuries.}
 
 %----------------------------------------------------------------------------------------
 %	ARTICLE CONTENTS
