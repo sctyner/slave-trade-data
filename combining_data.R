@@ -51,8 +51,10 @@ library(ggplot2)
 library(geomnet)
 ggplot() + mapWorld + 
   geom_net(data = slavenet_info_all, directed = TRUE, ealpha = 0.1, layout = NULL, 
-           aes(from_id = from_port, to_id = to_port, x = lon, y = lat, colour = datarr34)) 
+           aes(from_id = from_port, to_id = to_port, x = lon, y = lat, colour = natinimp, size = tslavesp)) + 
+  theme(legend.position = 'bottom')
 
 
+#write.csv(slavenet_info_all, "slavenet.csv")
  
-  
+# not sure where to go next.  
