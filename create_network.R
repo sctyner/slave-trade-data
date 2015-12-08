@@ -1,22 +1,24 @@
 # combining from - to data for network plotting
 
 # maybe only deal with the voyages that were completed as intended
-completes <- which(data$fate == 'Voyage completed as intended')
+completes <- which(data$fate2 %in% c("Slaves disembarked Americas", "Slaves disembarked in Africa/Europe"))
 
-from_to <- data[completes,c('embport', 'embport2', 'portdep', 'arrport', 'arrport2', 'sla1port', 'portret')]
+from_to <- na.omit(data[completes,c('voyageid','ptdepimp', 'mjbyptimp', 'mjslptimp', 'slaximp', 'slamimp')])
+
+
 
 from <- from_to[,1:3]
 from
 to <- from_to[, c(4:6)]
 library(plyr)
-from_nas <- ldply(apply(from, 1, function(x) sum(is.na(x))),  .fun = rbind)
-from_to2[which(from_nas[,2] == 3),1])
+#from_nas <- ldply(apply(from, 1, function(x) sum(is.na(x))),  .fun = rbind)
+#from_to2[which(from_nas[,2] == 3),1])
 
-to_nas <- ldply(apply(to, 1, function(x) as.numeric(sum(is.na(x)))), .fun = rbind)
-to_nas[which(to_nas[,2] == 3),1]
+#to_nas <- ldply(apply(to, 1, function(x) as.numeric(sum(is.na(x)))), .fun = rbind)
+#to_nas[which(to_nas[,2] == 3),1]
 
-from_to2 <- data[completes,c('voyageid','embport', 'embport2', 'portdep', 'arrport', 'arrport2', 'sla1port', 'portret')]
-from_to3 <- from_to2[-as.numeric(unique(c(from_to2[which(from_nas[,2] == 3),1], from_to2[which(to_nas[,2] == 3),1]))),]
+#from_to2 <- data[completes,c('voyageid','embport', 'embport2', 'portdep', 'arrport', 'arrport2', 'sla1port', 'portret')]
+#from_to3 <- from_to2[-as.numeric(unique(c(from_to2[which(from_nas[,2] == 3),1], from_to2[which(to_nas[,2] == 3),1]))),]
 
 slave_net <- data.frame(matrix(NA, nrow=nrow(from_to), ncol = 2))
 
@@ -53,6 +55,14 @@ slavenet$from_port <- as.factor(slavenet$from_port)
 slavenet$to_port <- as.factor(slavenet$to_port)
 
 head(slavenet)
+library(magrittr)
+from_to$ptdepimp %<>% as.character
+from_to$mjbyptimp %<>% as.character
+from_to$mjslptimp %<>% as.character
+
+ggplot(data = from_to, aes(from_id = ptdepimp, to_id = mjbyptimp)) + 
+  geom_net(label = TRUE) +
+  theme_net()
 
 ggplot(data = slavenet, aes(from_id = from_port , to_id = to_port)) + 
   geom_net(label = TRUE, layout = 'fruchtermanreingold') + 

@@ -49,8 +49,10 @@ slavenet_info_all$date_depart <- date_departs
 slavenet_info_all$date_arrive <- date_arrives
 library(ggplot2)
 library(geomnet)
+# throws error when I try to add curvature: "Error in if (any(x1 == x2 & y1 == y2)) stop("end points must not be identical") : 
+#   missing value where TRUE/FALSE needed"
 ggplot() + mapWorld + 
-  geom_net(data = slavenet_info_all, directed = TRUE, ealpha = 0.1, layout = NULL, 
+  geom_net(data = slavenet_info_all , directed = TRUE, ealpha = 0.1, layout = NULL, curvature = .5,
            aes(from_id = from_port, to_id = to_port, x = lon, y = lat, colour = natinimp, size = tslavesp)) + 
   theme(legend.position = 'bottom')
 
