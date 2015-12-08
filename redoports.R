@@ -9,7 +9,7 @@ from_to$mjbyptimp %<>% as.character
 from_to$mjslptimp %<>% as.character
 
 
-port_info_clean <- read.csv("port_info.csv", stringsAsFactors = FALSE)
+#port_info_clean <- read.csv("port_info.csv", stringsAsFactors = FALSE)
 
 # fugheddaboutit
 
@@ -218,6 +218,7 @@ from_to <- from_to[-grep('074', as.character(from_to$mjbyptimp)),]
 # plot network: departure point to point where slaves are taken
 
 slavenet1 <- merge(from_to, ports, by.x = 'ptdepimp', by.y = 'name', all = TRUE)
+slavenet2 <- merge(from_to, ports, by.x = 'mjbyptimp', by.y = 'name', all = TRUE)
 
 library(ggplot2)
 library(geomnet)
@@ -227,3 +228,9 @@ ggplot(data = slavenet1, aes(from_id = ptdepimp, to_id = mjbyptimp)) +
 
 ggplot(data = slavenet1) + 
   geom_net(directed = TRUE, layout = NULL, aes(from_id = ptdepimp, to_id = mjbyptimp, x = longitude, y = latitude))
+
+ggplot(data = slavenet2, aes(from_id = mjbyptimp, to_id = mjslptimp)) +
+  geom_net(directed = TRUE)
+
+ggplot(data = slavenet2) + 
+  geom_net(directed = TRUE, layout = NULL, aes(from_id = mjbyptimp, to_id = mjslptimp, x = longitude, y = latitude))
