@@ -22,6 +22,7 @@
 
 \usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
 \usepackage{url}
+\usepackage{natbib}
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage[protrusion=true,expansion=true]{microtype} % Better typography
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
@@ -106,7 +107,7 @@ Iowa State University % Your institution
 
 \section*{Introduction}
 
-\st{XXX Need softer intro XXX} 
+\st{XXX Need intro. Talk about data source(s), structure, motivation for project, etc. XXX} 
 
 
 %------------------------------------------------
@@ -115,14 +116,14 @@ Iowa State University % Your institution
 
 \par To view the Trans-Atlantic Slave Trade Database in a new way, I use the \texttt{geomnet} package, which can be installed from \url{https://github.com/sctyner/geomnet}.  This package is built on the development version of \texttt{ggplot2}, which can be installed from \url{https://github.com/hadley/ggplot2}.  
 
-\par The key function in \texttt{geomnet} is a new \texttt{geom} for \texttt{ggplot2}, \texttt{geom\_net()}.  The major advantage of using this new \texttt{geom} over other network packages like \texttt{network} or \texttt{igraph} is the data format required. To visualize networks using the current capabilities in those pacakges, the user needs to be intimately familiar with the structure of network data and how to manipulate it. The data required for \texttt{geomnet}, however, is just a data frame, like all \texttt{ggplot2} functions require. This is a major advantage for the users who find themselves with network data but have little or no experience with it. 
+\par The key function in \texttt{geomnet} is a new \texttt{geom} for \texttt{ggplot2}, \texttt{geom\_net()}.  The major advantage of using this new \texttt{geom} over other network packages like \texttt{network} or \texttt{igraph} is the data format required \citep{network, igraph}. To visualize networks using the current capabilities in those pacakges, the user needs to be intimately familiar with the structure of network data and how to manipulate it. The data required for \texttt{geomnet}, however, is just a data frame, like all \texttt{ggplot2} functions require. This is a major advantage for the users who find themselves with network data but have little or no experience with it. 
 
 \par \st{XXX insert paragraph about data structure XXX}
 
 \par Visualizing networks with \texttt{geom\_net} will feel very natural to users already familiar with \texttt{ggplot2}.  The arguments to pass to this function are 
   \begin{itemize}
   \item \texttt{directed}: a logical value to indicate whether the network is directed (default is \texttt{FALSE});
-  \item \texttt{layout}: layout to use, from \texttt{gplot.layout.()} in \texttt{sna} (default is \texttt{Kamada-Kawai}); 
+  \item \texttt{layout}: layout to use, from \texttt{gplot.layout.()} in \texttt{sna} (default is \texttt{Kamada-Kawai} \citep{kamadakawai}); 
   \item \texttt{layout.par}: parameters to pass to layout function, see \texttt{?gplot.layout} for more;
   \item \texttt{curvature}: a value to indicate how much to curve the edges (default is 0);
   \item \texttt{fiteach}: if using facetting, a logical value indicating whether to use the same or different layout to each panel (default is \texttt{TRUE});
@@ -141,10 +142,18 @@ The required aesthetic options are
   \item \texttt{x} and \texttt{y}: if \texttt{layout = NULL}, \texttt{x} and \texttt{y} set the locations of the nodes (e.g. longitude and latitude)
   \end{itemize}
 
+%-----------------------------------------------------------------------------  
+\section*{Visualizing the data}  
+
+\st{XXX show yearly breakdowns, country breakdowns, etc. }
+
+\section*{Conclusion}
+
+\st{XXX talk about what I learned from these visualizations, historical importance \& understanding?}
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
-
+\bibliographystyle{abbrv}
 \bibliography{ASA_SCSG_Paper}
 
 %----------------------------------------------------------------------------------------
