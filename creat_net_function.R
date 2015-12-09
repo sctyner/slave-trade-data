@@ -33,7 +33,7 @@ stbycent2 <- create_net_data(edge_data = from_to, node_data = ports, variable = 
 
 ggplot(data = st19) + 
   geom_net(directed = TRUE, aes(from_id = mjbyptimp, 
-                                               to_id = mjslptimp))
+                                               to_id = mjslptimp), position = 'dodge')
 
 ggplot(stbycent) + geom_net(aes(from_id = mjbyptimp, 
                                 to_id = mjslptimp, x = longitude, y = latitude, color = century), directed = TRUE, layout = NULL) 
@@ -57,13 +57,13 @@ st17901 <- create_net_data(edge_data = from_to, node_data = ports, variable = "y
 
 #looks fine
 ggplot(st1790) + geom_net(aes(from_id = mjbyptimp, 
-                                to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL) 
+                                to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL,  ecolour = country) 
 #looks fine
 ggplot(st1791) + geom_net(aes(from_id = mjbyptimp, 
                               to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL) 
 #doesn't work
 ggplot(st17901) + geom_net(aes(from_id = mjbyptimp, 
-                              to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL) + facet_wrap(~yeardep)
+                              to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL, fiteach = TRUE) + facet_wrap(~yeardep)
 #also doesn't work
 ggplot(rbind(st1790,st1791)) + geom_net(aes(from_id = mjbyptimp, 
                                to_id = mjslptimp, x = longitude, y = latitude), directed = TRUE, layout = NULL) + facet_wrap(~yeardep)

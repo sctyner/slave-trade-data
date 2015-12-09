@@ -21,6 +21,7 @@
 \documentclass[DIV=calc, paper=a4, fontsize=10pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
 
 \usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{url}
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage[protrusion=true,expansion=true]{microtype} % Better typography
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
@@ -54,6 +55,10 @@
 \lettrine[lines=3,lhang=0.3,nindent=0em]{
 \color{black}
 {\textsf{#1}}}{}}
+\usepackage{color}
+\definecolor{purple}{rgb}{.4,0,.8}
+\newcommand{\hh}[1]{{\color{magenta} #1}}
+\newcommand{\st}[1]{{\color{purple} #1}}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -93,7 +98,7 @@ Iowa State University % Your institution
 
 % The first character should be within \initial{}
 \vspace{-1cm}
-\initial{U}\textbf{sing a new way to visualize network data in \texttt{R} and \texttt{gglot2}, I examine the evolution of the African slave trade from the $16^{th}$ through the $19^{th}$ centuries.}
+\initial{U}\textbf{sing a new way to visualize network data in \texttt{R} with \texttt{gglot2}, I examine the evolution of the African slave trade from the $16^{th}$ through the $19^{th}$ centuries. \st{XXX I feel like I need more here. Will add more when paper is more fleshed out.}}
 
 %----------------------------------------------------------------------------------------
 %	ARTICLE CONTENTS
@@ -101,65 +106,40 @@ Iowa State University % Your institution
 
 \section*{Introduction}
 
-\lipsum[1-3] % Dummy text
+\st{XXX Need softer intro XXX} 
 
-\begin{align}
-A = 
-\begin{bmatrix}
-A_{11} & A_{21} \\
-A_{21} & A_{22}
-\end{bmatrix}
-\end{align}
-
-\lipsum[4] % Dummy text
 
 %------------------------------------------------
 
-\subsection*{Subsection 1}
+\section*{The \texttt{geomnet} package}
 
-\lipsum[5] % Dummy text
+\par To view the Trans-Atlantic Slave Trade Database in a new way, I use the \texttt{geomnet} package, which can be installed from \url{https://github.com/sctyner/geomnet}.  This package is built on the development version of \texttt{ggplot2}, which can be installed from \url{https://github.com/hadley/ggplot2}.  
 
-\begin{itemize}
-\item First item in a list 
-\item Second item in a list 
-\item Third item in a list
-\end{itemize}
+\par The key function in \texttt{geomnet} is a new \texttt{geom} for \texttt{ggplot2}, \texttt{geom\_net()}.  The major advantage of using this new \texttt{geom} over other network packages like \texttt{network} or \texttt{igraph} is the data format required. To visualize networks using the current capabilities in those pacakges, the user needs to be intimately familiar with the structure of network data and how to manipulate it. The data required for \texttt{geomnet}, however, is just a data frame, like all \texttt{ggplot2} functions require. This is a major advantage for the users who find themselves with network data but have little or no experience with it. 
 
-\lipsum[6] % Dummy text
+\par \st{XXX insert paragraph about data structure XXX}
 
-%------------------------------------------------
-
-\subsection*{Subsection 2}
-
-\lipsum[7] % Dummy text
-
-\begin{table}
-\caption{Random table}
-\centering
-\begin{tabular}{llr}
-\toprule
-\multicolumn{2}{c}{Name} \\
-\cmidrule(r){1-2}
-First name & Last Name & Grade \\
-\midrule
-John & Doe & $7.5$ \\
-Richard & Miles & $2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%------------------------------------------------
-
-\section*{Section 2}
-
-\lipsum[8] % Dummy text
-
-\begin{description}
-\item[First] This is the first item
-\item[Last] This is the last item
-\end{description}
-
-\lipsum[9] % Dummy text
+\par Visualizing networks with \texttt{geom\_net} will feel very natural to users already familiar with \texttt{ggplot2}.  The arguments to pass to this function are 
+  \begin{itemize}
+  \item \texttt{directed}: a logical value to indicate whether the network is directed (default is \texttt{FALSE});
+  \item \texttt{layout}: layout to use, from \texttt{gplot.layout.()} in \texttt{sna} (default is \texttt{Kamada-Kawai}); 
+  \item \texttt{layout.par}: parameters to pass to layout function, see \texttt{?gplot.layout} for more;
+  \item \texttt{curvature}: a value to indicate how much to curve the edges (default is 0);
+  \item \texttt{fiteach}: if using facetting, a logical value indicating whether to use the same or different layout to each panel (default is \texttt{TRUE});
+  \item \texttt{arrowsize}: if \texttt{directed = TRUE}, use this parameter to change the size of the arrowhead by a numeric multiple;
+  \item \texttt{arrowgap}: if \texttt{directed = TRUE}, use this parameter to avoid overplotting of arrowheads by shrinking the length of the edge by a small amount (e.g. \texttt{arrowgap = 0.05});
+  \item \texttt{selfies}: if a network contains self-referencing edges, where from and to node are identical, then set \texttt{selfies = TRUE} to view these edges;
+  \item \texttt{label}: can be a logical value or a data variable. If set to \texttt{TRUE}, the node names are used to label the nodes. If set to a data variable, the variable should be a character variable of names with which to label nodes. Position can be adjusted with \texttt{hjust} or \texttt{vjust};
+  \end{itemize}
+The required aesthetic options are 
+  \begin{itemize}
+  \item \texttt{from\_id}: the column containing the first node describing an edge in the network, and
+  \item \texttt{to\_id}: the column containing the second node describing an edge in the network.
+  \end{itemize}
+  Other aesthetic options available to the user, besides the usual options for \texttt{geom\_point} and \texttt{geom\_segment}, are
+  \begin{itemize}
+  \item \texttt{x} and \texttt{y}: if \texttt{layout = NULL}, \texttt{x} and \texttt{y} set the locations of the nodes (e.g. longitude and latitude)
+  \end{itemize}
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
