@@ -1,6 +1,6 @@
 completes <- which(data$fate2 %in% c("Slaves disembarked Americas", "Slaves disembarked in Africa/Europe"))
 
-from_to <- na.omit(data[completes,c('voyageid','ptdepimp', 'mjbyptimp', 'mjslptimp', 'slaximp', 'slamimp')])
+from_to <- na.omit(data[completes,c('voyageid','ptdepimp', 'mjbyptimp', 'mjslptimp', 'slaximp', 'slamimp', 'natinimp')])
 
 
 library(magrittr)
@@ -17,13 +17,13 @@ from_to$mjslptimp %<>% as.character
 
 library(rjson)
 json_file <- "locations_json.txt"
-json_data <- fromJSON(file=json_file)
+json_data <- rjson::fromJSON(file=json_file)
 
 library(plyr)
 
 loc.type <- NULL
 for (i in 1:931){
-  type1 <- ldply(json_data[[i]][[2]])
+  type1 <- plyr::ldply(json_data[[i]][[2]])
   loc.type <- rbind(loc.type, type1)
 }
 
@@ -33,22 +33,21 @@ broadregion.idx <- which(loc.type[,1] == 'voyage.broadregion')
 place.idx <- which(loc.type[,1] == 'voyage.place')
 region.idx <- which(loc.type[,1] == 'voyage.region')
 
-
-
 broadregion.info <- NULL
 for (i in broadregion.idx){
-  info <- ldply(json_data[[i]][[3]])
+  info <- plyr::ldply(json_data[[i]][[3]])
   broadregion.info <- rbind(broadregion.info, info)
 }
 
 summary(broadregion.info$.id)
+library(dplyr)
 broadregion.info %<>% arrange(.id)
 broadregion.info2 <- data.frame(value = broadregion.info[29:35,2], location.type = 'broad_region', location.name = broadregion.info[1:7,2],
                                 latitude = broadregion.info[8:14,2], longitude = broadregion.info[15:21,2])
 
 place.info <- NULL
 for (i in place.idx){
-  info <- ldply(json_data[[i]][[3]])
+  info <- plyr::ldply(json_data[[i]][[3]])
   place.info <- rbind(place.info, info)
 }
 summary(place.info$.id)
@@ -58,7 +57,7 @@ place.info2 <- data.frame(value = place.info[4993:5824,2], location.type = 'plac
 
 region.info <- NULL
 for (i in region.idx){
-  info <- ldply(json_data[[i]][[3]])
+  info <- plyr::ldply(json_data[[i]][[3]])
   region.info <- rbind(region.info, info)
 }
 summary(region.info$.id)
@@ -195,16 +194,16 @@ head(locations.info)
 ports <- merge(ports, locations.info, by.x = 'name', by.y = 'location.name')
 
 
-library(sp)
-library(rworldmap)
+#library(sp)
+#library(rworldmap)
 # below fn from: http://stackoverflow.com/questions/14334970/convert-latitude-and-longitude-coordinates-to-country-name-in-r
 coords2country = function(points){  
-  countriesSP <- getMap(resolution='low')
+  countriesSP <- rworldmap::getMap(resolution='low')
   # convert our list of points to a SpatialPoints object
   # setting CRS directly to that from rworldmap
-  pointsSP = SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
+  pointsSP = sp::SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
   # use 'over' to get indices of the Polygons object containing each point 
-  indices = over(pointsSP, countriesSP)
+  indices = sp::over(pointsSP, countriesSP)
   # return the ADMIN names of each country
   indices$ADMIN  
 }

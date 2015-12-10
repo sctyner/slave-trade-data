@@ -109,6 +109,7 @@ Iowa State University % Your institution
 
 \st{XXX Need intro. Talk about data source(s), structure, motivation for project, etc. XXX} 
 
+\par The Trans-Atlantic Slave Trade Database, hosted by Emory University, contains information on nearly 35,000 voyages of slave ships from 1514 - 1866 between Europe, Africa, and the Americas \citep{voyages}. The data are extensive, and come chiefly from primary sources, such as ship manifests or family and business records. Some of the variables included in the database are the ships' owners, the country of origin of the ship, the number of men, women, and children that were taken from Africa as slaves, and the outcome of the voyage. The database also contains information on ships that were wrecked, captured, or never heard from again, so for my visualizations, I only include trips with outcomes where slaves disembarked in the Americas or disembarked in Africa or Europe. I also only include data where the
 
 %------------------------------------------------
 
@@ -146,6 +147,239 @@ The required aesthetic options are
 \section*{Visualizing the data}  
 
 \st{XXX show yearly breakdowns, country breakdowns, etc. }
+
+<<dat_read_clean,echo=FALSE, cache=TRUE, message=FALSE,warning=FALSE>>=
+library(foreign)
+st <- read.spss("tastdb-exp-2010.sav")
+labels <- attr(st, "label.table")
+fulldata <- data.frame(st)
+completes <- which(fulldata$fate2 %in% c("Slaves disembarked Americas", "Slaves disembarked in Africa/Europe"))
+
+# 'ptdepimp'=origin port of ship, 'mjbyptimp'=port where slaves taken aboard, 'mjslptimp'=port where slaves were left, 'slaximp'= # slaves departed from africa, 'slamimp'= # slaves arrived in americas,  'natinimp'=nation of ship
+
+from_to <- na.omit(fulldata[completes,c('voyageid','ptdepimp', 'mjbyptimp', 'mjslptimp', 'slaximp', 'slamimp', 'natinimp')])
+
+library(dplyr)
+library(magrittr)
+from_to$ptdepimp %<>% as.character
+from_to$mjbyptimp %<>% as.character
+from_to$mjslptimp %<>% as.character
+
+json_file <- "locations_json.txt"
+json_data <- rjson::fromJSON(file=json_file)
+loc.type <- NULL
+for (i in 1:931){
+  type1 <- plyr::ldply(json_data[[i]][[2]])
+  loc.type <- rbind(loc.type, type1)
+}
+
+broadregion.idx <- which(loc.type[,1] == 'voyage.broadregion')
+place.idx <- which(loc.type[,1] == 'voyage.place')
+region.idx <- which(loc.type[,1] == 'voyage.region')
+
+broadregion.info <- NULL
+for (i in broadregion.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  broadregion.info <- rbind(broadregion.info, info)
+}
+
+broadregion.info %<>% arrange(.id)
+broadregion.info2 <- data.frame(value = broadregion.info[29:35,2], location.type = 'broad_region', location.name = broadregion.info[1:7,2],
+                                latitude = broadregion.info[8:14,2], longitude = broadregion.info[15:21,2])
+
+place.info <- NULL
+for (i in place.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  place.info <- rbind(place.info, info)
+}
+place.info %<>% arrange(.id)
+place.info2 <- data.frame(value = place.info[4993:5824,2], location.type = 'place', location.name = place.info[1665:2496,2],
+           latitude = place.info[1:832,2], longitude = place.info[833:1664,2])
+
+region.info <- NULL
+for (i in region.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  region.info <- rbind(region.info, info)
+}
+region.info %<>% arrange(.id)
+region.info2 <- data.frame(value = region.info[553:644,2], location.type = 'region', location.name = region.info[277:368,2],
+           latitude = region.info[93:184,2], longitude = region.info[185:276,2])
+locations.info <- rbind(broadregion.info2, region.info2, place.info2)
+locations.info$value %<>% as.character %<>% as.numeric
+locations.info$location.name %<>% as.character
+locations.info$longitude %<>% as.character %<>% as.numeric
+locations.info$latitude %<>% as.character %<>% as.numeric
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "St. Paul de Loanda")] <- "St. Paul"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "St. Paul de Loanda")] <- "St. Paul"
+from_to$mjslptimp[which(from_to$mjslptimp == "St. Paul de Loanda")] <- "St. Paul"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "New York, port unspecified")] <- "New York"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "New York, port unspecified")] <- "New York"
+from_to$mjslptimp[which(from_to$mjslptimp == "New York, port unspecified")] <- "New York"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Marseille")] <- "Marseilles"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Marseille")] <- "Marseilles"
+from_to$mjslptimp[which(from_to$mjslptimp == "Marseille")] <- "Marseilles"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Saint John")] <- "Saint John (Antigua)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Saint John")] <- "Saint John (Antigua)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Saint John")] <- "Saint John (Antigua)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+from_to$mjslptimp[which(from_to$mjslptimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+from_to$mjslptimp[which(from_to$mjslptimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Sestos")] <- "Young Sestos"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Sestos")] <- "Young Sestos"
+from_to$mjslptimp[which(from_to$mjslptimp == "Sestos")] <- "Young Sestos"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Sugary")] <- "Sugary (Siekere)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Sugary")] <- "Sugary (Siekere)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Sugary")] <- "Sugary (Siekere)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Surinam")] <- "Suriname"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Surinam")] <- "Suriname"
+from_to$mjslptimp[which(from_to$mjslptimp == "Surinam")] <- "Suriname"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Newcastle")] <- "Newcastle (Nevis)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Newcastle")] <- "Newcastle (Nevis)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Newcastle")] <- "Newcastle (Nevis)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Vera Cruz")] <- "Veracruz"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Vera Cruz")] <- "Veracruz"
+from_to$mjslptimp[which(from_to$mjslptimp == "Vera Cruz")] <- "Veracruz"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "La Guiara")] <- "La Guaira"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "La Guiara")] <- "La Guaira"
+from_to$mjslptimp[which(from_to$mjslptimp == "La Guiara")] <- "La Guaira"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+
+from_to$yeardep <- fulldata$yeardep[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$yearaf <- fulldata$yearaf[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$yearam <- fulldata$yearam[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$sladeath <- from_to$slaximp - from_to$slamimp
+
+from_to <- from_to[-which(from_to$mjslptimp == "???"),]
+from_to <- from_to[-grep('074', as.character(from_to$mjbyptimp)),]
+from_to$century <- as.numeric(substr(as.character(from_to$yeardep), 1,2)) + 1
+
+ports <- data.frame(name = unique(c(unique(from_to$ptdepimp), unique(from_to$mjbyptimp), unique(from_to$mjslptimp))))
+
+ports <- merge(ports, locations.info, by.x = 'name', by.y = 'location.name')
+
+library(sp)
+coords2country = function(points){  
+  countriesSP <- rworldmap::getMap(resolution='low')
+  # convert our list of points to a SpatialPoints object
+  # setting CRS directly to that from rworldmap
+  pointsSP = sp::SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = sp::over(pointsSP, countriesSP)
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+ports$country <- coords2country(ports[,c('longitude','latitude')])
+
+# function to create a data set appropirate for network plotting. 
+# variable, from_id, to_id, node_id need to be characters. value needs to be character or numeric. 
+create_net_data <- function(edge_data, node_data, variable = NULL, value = NULL, from_id, to_id, node_id){
+  if (!is.null(variable) && !is.null(value)){
+    idx <- which(edge_data[, variable] %in% value)
+    edge_data <- edge_data[idx,]
+  } else{edge_data <- edge_data}
+  nodes1 <- unique(as.character(edge_data[,from_id]))
+  nodes2 <- unique(as.character(edge_data[,to_id]))
+  nodes <- unique(c(nodes1, nodes2))
+  node_idx <- which(node_data[, node_id] %in% nodes)
+  node_data <- node_data[node_idx,]
+  net_data <- merge(edge_data, node_data, by.x = from_id, by.y = node_id, all = T)
+}
+@
+
+<<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1519 - 1864. \\st{XXX Color is weird XXX}">>=
+library(ggplot2)
+library(geomnet)
+mp <- NULL
+mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
+mp <- ggplot() +   mapWorld
+theme_set(theme_bw())
+
+slavenet_all <- create_net_data(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+# I think arrowgap is behaving weirdly. color is also behaving weirdly
+mp + geom_net(data= slavenet_all, layout = NULL, directed = TRUE, ealpha = .3, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              color = natinimp)) + 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+
+@
+
+<<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.">>=
+st1807 <- create_net_data(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+mp + geom_net(data= st1807, layout = NULL, directed = TRUE, ealpha = .3, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              color = natinimp)) + 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+@
+
+<<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809. \\st{XXX edge coloring not working}">>=
+stgb <- create_net_data(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+library(RColorBrewer)
+fourcolors <- brewer.pal(4,"YlGnBu")
+# How to get edge colors to work??? ecolour = fourcolors[as.numeric(as.factor(stgb$century))]
+mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              color = as.factor(century), group = century)) + 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+@
+
+<<deaths,echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage. \\st{XXX add edge coloring somehow}">>=
+stdeaths <- create_net_data(edge_data = subset(from_to, sladeath >=0), node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              linewidth = sladeath/20)) + 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+@
 
 \section*{Conclusion}
 
