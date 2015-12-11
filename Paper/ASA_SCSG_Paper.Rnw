@@ -148,9 +148,14 @@ The required aesthetic options are
 
 \st{XXX show yearly breakdowns, country breakdowns, etc. }
 
+<<setup, echo=FALSE>>=
+datadir=".."
+
+@
+
 <<dat_read_clean,echo=FALSE, cache=TRUE, message=FALSE,warning=FALSE>>=
 library(foreign)
-st <- read.spss("tastdb-exp-2010.sav")
+st <- read.spss(file.path(datadir, "tastdb-exp-2010.sav"))
 labels <- attr(st, "label.table")
 fulldata <- data.frame(st)
 completes <- which(fulldata$fate2 %in% c("Slaves disembarked Americas", "Slaves disembarked in Africa/Europe"))
@@ -165,7 +170,7 @@ from_to$ptdepimp %<>% as.character
 from_to$mjbyptimp %<>% as.character
 from_to$mjslptimp %<>% as.character
 
-json_file <- "locations_json.txt"
+json_file <- file.path(datadir, "locations_json.txt")
 json_data <- rjson::fromJSON(file=json_file)
 loc.type <- NULL
 for (i in 1:931){
@@ -354,7 +359,8 @@ mp + geom_net(data= slavenet_all, layout = NULL, directed = TRUE, ealpha = .3, a
 <<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.">>=
 st1807 <- create_net_data(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
-mp + geom_net(data= st1807, layout = NULL, directed = TRUE, ealpha = .3, arrowgap = 1,
+mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
+              ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = natinimp)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
