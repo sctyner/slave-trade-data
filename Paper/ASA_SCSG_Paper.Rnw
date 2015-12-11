@@ -348,12 +348,23 @@ theme_set(theme_bw())
 
 slavenet_all <- create_net_data(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
+from_to_lat <- merge(from_to, ports[,c("name", "longitude", "latitude")], by.x="mjbyptimp", by.y="name")
+from_to_lat <- merge(from_to_lat, ports[,c("name", "longitude", "latitude")], by.x="mjslptimp", by.y="name")
+
 # I think arrowgap is behaving weirdly. color is also behaving weirdly
-mp + geom_net(data= slavenet_all, layout = NULL, directed = TRUE, ealpha = .3, arrowgap = 1,
+p <- mp + geom_net(data= slavenet_all, layout = NULL, 
+              directed = TRUE, ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = natinimp)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 
+mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
+  geom_point(data= from_to_lat, aes(x=longitude.y, y = latitude.y)) +
+  geom_segment(data= from_to_lat, aes(x=longitude.x, xend=longitude.y, 
+                   y=latitude.x, yend=latitude.y, colour=natinimp), alpha=0.1) +
+#  facet_wrap(~natinimp) +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  guides(colour = guide_legend(override.aes = list(alpha=1)))
 @
 
 <<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.">>=
