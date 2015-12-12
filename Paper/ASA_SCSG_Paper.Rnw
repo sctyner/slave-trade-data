@@ -109,8 +109,11 @@ Iowa State University % Your institution
 
 \st{XXX Need intro. Talk about data source(s), structure, motivation for project, etc. XXX} 
 
-\par The Trans-Atlantic Slave Trade Database, hosted by Emory University, contains information on nearly 35,000 voyages of slave ships from 1514 - 1866 between Europe, Africa, and the Americas \citep{voyages}. The data are extensive, and come chiefly from primary sources, such as ship manifests or family and business records. Some of the variables included in the database are the ships' owners, the country of origin of the ship, the number of men, women, and children that were taken from Africa as slaves, and the outcome of the voyage. The database also contains information on ships that were wrecked, captured, or never heard from again, so for my visualizations, I only include trips with outcomes where slaves disembarked in the Americas or disembarked in Africa or Europe. I also only include data where the
+\par The Trans-Atlantic Slave Trade Database, hosted by Emory University, contains information on nearly 35,000 voyages of slave ships from 1514 - 1866 between Europe, Africa, and the Americas \citep{voyages}. The data are extensive, and come chiefly from primary sources, such as ship manifests or family and business records. Although the current host of these data is Emory University, collecting this vital historic data has taken decades. In the last 15 years alone, over 50 individual researchers have contributed data from their own research to help complete this database. 
 
+\par There are 279 variables containing information on the 34,948 voyages. Some of the variables included in the database are the ships' owners, the country of origin of the ship, the number of men, women, and children that were taken from Africa, and the outcome of the voyage. The database also includes information on ships that were wrecked, captured, or never heard from again, so for my visualizations, I only include trips with outcomes where slaves disembarked in the Americas or disembarked in Africa or Europe.  Additionally, due to the inconsistent nature of the historical data sources, there are many missing values, and 22 of the variables are actually imputed.\footnote{See \url{http://www.slavevoyages.org/voyage/understanding-db/methodology-9} for more information on how the imputed variables are derived.} So, in order to fully appreciate the magnitude of this data, I focus on the imputed varibles. By using the most robust variables, I can present the most complete visual analysis of the forced migration of Africans to the Americas.  
+
+\par The website dedicated to exploring this data, \url{www.slavevoyages.org}, also contains a dashboard to view and subset the data. It also hosts a graph builder for simple plots, such as scatterplots, time series, or bar graphs, an interactive map, and an animation of all slave ships leaving Africa and arriving in the Americas. While using these tools, I felt that the interactive map lacked detail. The user of the map can zoom in to see more detail, but by zooming in, you lose the entire journey. The animation shows ships as dots flying across the Atlantic Ocean and arriving in the Americas, but it lacks permanence. Seeing the ships travel across the ocean is very informative, but not very impactful. A similar animiation appeared in Slate Magazine in June 2015 \citep{slate}. Finally, other animations by two researchers at Georgetown University show the cumulative frequencies of port of departure, port of slave purchase, and port of slave sale \citep{heatmaps}. The animations are all beautiful, but I think they fail to leave the viewer with a real understanding of the depth and the magnitude of the centuries-long practice of stealing people from their homes and selling them into slavery in foreign countries.    \st{XXX a little preachy? XXX}
 %------------------------------------------------
 
 \section*{The \texttt{geomnet} package}
@@ -342,7 +345,7 @@ create_net_data2 <- function(edge_data, node_data, variable = NULL, value = NULL
 }
 @
 
-<<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1519 - 1864. \\st{XXX Color is weird XXX}">>=
+<<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1519 - 1864.">>=
 library(ggplot2)
 library(geomnet)
 mp <- NULL
@@ -385,7 +388,7 @@ mp + geom_net(data= st1807, layout = NULL, directed = TRUE,
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
-<<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809. \\st{XXX edge coloring not working}">>=
+<<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809.">>=
 stgb <- create_net_data2(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 library(RColorBrewer)
@@ -397,7 +400,7 @@ mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
-<<deaths,echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage. \\st{XXX add edge coloring somehow}">>=
+<<deaths,echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage.">>=
 stdeaths <- create_net_data2(edge_data = subset(from_to, sladeath >=0), node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
