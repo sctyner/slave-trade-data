@@ -348,9 +348,23 @@ create_net_data2 <- function(edge_data, node_data, variable = NULL, value = NULL
 <<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1519 - 1864.">>=
 library(ggplot2)
 library(geomnet)
+
+myborders <- function(xlim=c(-105,75), ylim = c(-50,50)) {
+  paths <- borders("world", colour="gray50", fill=NA,
+          xlim=xlim, ylim = ylim)
+  data <- paths$data
+  data$long <- pmax(data$long, min(xlim))
+  data$long <- pmin(data$long, max(xlim))
+  data$lat <- pmax(data$lat, min(ylim))
+  data$lat <- pmin(data$lat, max(ylim))
+  paths$data <- data
+  paths
+}
+
 mp <- NULL
-mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
-mp <- ggplot() +   mapWorld
+#mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
+mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
+mp <- ggplot() +   mapWorld 
 theme_set(theme_bw())
 
 slavenet_all <- create_net_data2(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
