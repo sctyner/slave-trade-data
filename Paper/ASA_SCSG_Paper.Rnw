@@ -349,7 +349,7 @@ create_net_data3 <- function(edge_data, node_data, variable = NULL, value = NULL
 
 \section*{Visualizing the data}  
 
-I start by visualizing all of the data I pulled from the database on one map. This first visualization, shown in \autoref{fig:whole_dataset_plot}, contains all of the voyages from 1525 - 1864 between Africa and the Americas. We can see that most slaves were brought to islands in the Caribbean, with the most traffic from by British, French, and Spanish ships. The two smallest countries involved, Portugal and the Netherlands, appear to have had almost total control of the slave trade in Brazil and on the north coast of South America, respectively. And in the United States, most of the ships that arrive bringing slaves are British or French ships, reflecting the control the British and the French had of those territories before the Revolutionary War. A drawback of this plot is that the data set contains 18,117 voyages, so there is over-plotting. And though I use the \texttt{ealpha} parameter in \texttt{geomnet} to alleviate some of it, but the points are still over-plotted, so I focus next on exploring specific interesting subsets of the data. 
+I start by visualizing all of the data I pulled from the database on one map. This first visualization, shown in \autoref{fig:whole_dataset_plot}, contains all of the voyages from 1525 - 1864 between Africa and the Americas. We can see that most slaves were brought to islands in the Caribbean, with the most traffic from by British, French, and Spanish ships. The two smallest countries involved, Portugal and the Netherlands, appear to have had almost total control of the slave trade in Brazil and on the north coast of South America, respectively. And in the United States, most of the ships that arrive bringing slaves are British or French ships, reflecting the control the British and the French had of those territories before the Revolutionary War. A drawback of this plot is that the data set contains 18,117 voyages, so there is over-plotting. And though I use the \texttt{ealpha} parameter in \texttt{geomnet} to alleviate some of it, the points are still over-plotted, so from now on I focus on specific interesting subsets of the data. On the other hand, the sheer quantity of lines crossing the Atlantic ocean helps give weight to this story. Millions of Africans are represented in those lines, and hundreds of thousands never made it to the other size of the ocean. Seeing these huge jumbles of lines gives the viewer a better sense of the consequences of the atrocities committed: our European and American ancestors kidnapped millions of people to make a profit.  
 
 <<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1525 - 1864.", fig.pos='h'>>=
 library(ggplot2)
@@ -371,7 +371,7 @@ mp <- NULL
 #mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
 mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
 mp <- ggplot() +   mapWorld 
-theme_set(theme_bw() + theme(aspect.ratio = 1))
+theme_set(theme_bw())
 
 slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
@@ -384,10 +384,10 @@ slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variabl
 
 # I think arrowgap is behaving weirdly. color is also behaving weirdly
 mp + geom_net(data= slavenet_all, layout = NULL, 
-              directed = TRUE, ealpha = .1, arrowgap = 1, curvature = .2,
+              directed = TRUE, ealpha = .1, arrowgap = 1, 
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
-  scale_color_brewer(palette = 'Set1') + 
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 
 # mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
@@ -410,8 +410,8 @@ st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "y
 mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
               ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp, arrowsize = arrowsize, group = natinimp, curvature = .2)) +
-  scale_color_brewer(palette = 'Set1') + 
+              color = natinimp, arrowsize = arrowsize, group = natinimp)) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
@@ -421,7 +421,7 @@ mp + geom_net(data= st1807, layout = NULL, directed = TRUE,
 stgb <- create_net_data3(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 
-mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1, curvature = .2,
+mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1, 
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = as.factor(century), group = century, arrowsize= arrowsize)) + 
   scale_color_brewer(palette = 'Spectral', name = 'Century') + 
@@ -456,10 +456,65 @@ mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arro
   usa_death_data <- merge(usa3, ports, by.x = "mjbyptimp", by.y = "name", all = T)
 
 mp + geom_net(data= usa_death_data, layout = NULL, 
-              ealpha = .1, arrowgap = 1, directed = TRUE,color = "#ff7f00", curvature = .2,
+              ealpha = .1, arrowgap = 1, directed = TRUE,color = "#ff7f00",
               aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
                    size = slaximp, arrowsize = arrowlength)) +
+  scale_size_continuous(name = 'Number of Slaves') + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) 
+@
+
+\par Next I explore the evolution of the slave trade over time. In the first twenty-five years of slaves being sold in the Americas, from 1525-1550, there were only two voyages arriving. Both were Portuguese ships carrying 300 slaves from S\~{a}o Tom\'{e} in the Gulf of Guinea to the Caribbean. In \autoref{fig:firstyears} the first 75 years of voyages, from 1525 to 1600 are shown. There are 98 voyages in these first years, taking 20,951 Africans from their homes and selling 15,322 of them into slavery, with 5,629 dying during the voyages. The only countries participating in in the slave trade in these first years are Spain, Portugal, and Great Britain, and they are only embarking and disembarking from 20 different ports: ten in Africa and ten in the Americas. 
+
+<<first_years, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All ships arriving in the Americas in the first 75 years of the slave trade, from 1525-1600. Port name is labeled.", fig.pos='h'>>=
+firstyears75 <- create_net_data3(edge_data = subset(from_to, yearam %in% c(1525:1600)), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+firstyears75$label <- NA
+firstyears75$label[which(firstyears75$arrowsize == 1)] <- firstyears75$mjbyptimp[which(firstyears75$arrowsize == 1)]
+firstyears75$label[which(is.na(firstyears75$label))] <- firstyears75$mjslptimp[which(firstyears75$arrowsize == 1)]
+firstyears75$label <- sub(", port unspecified", '', firstyears75$label)
+
+
+mp + geom_net(data= firstyears75, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE, vjust = 1,hjust=-.05, labelcolour = 'black',
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, color = natinimp, group = natinimp#, label = label
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-25,30)) 
+@
+
+\par I also consider the last years of the slave trade. The last year of the slave trade was 1864, and only one ship sold slaves in the Americas that year: a French ship with 673 Africans from the Congo River area who were sold into slavery in Cuba despite the fact that the slave trade was outlawed in France over 40 years prior in 1818. The last country in the dataset to abolish the slave trade was Portugal in 1836, yet the slave trade continued for almost two decades more, albeit at a much slower pace. The American ships that were still trading after 1807 got around the law, which actually only prohibited import of new slaves to the United States, by still participating in the slave trade and mostly avoiding ports in US territory. This is shown in \autoref{fig:us1808}, with the years of disembarkation and embarkation of slaves surrounding the ports. There is some over-plotting of the labels, but we can see that most of the slave trade routes still being run by US ships after the ban end with slaves being sold in Brazil and in Cuba. 
+
+<<us1808, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All US ships still participating in the slave trade after its ban in the US in 1807.", fig.pos='h'>>=
+us1808 <- create_net_data3(edge_data = filter(from_to, natinimp == "USA", yearam >=1808), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+us1808$label <- ""
+us1808$label[which(us1808$arrowsize == 1)] <- us1808$yearaf[which(us1808$arrowsize == 1)]
+us1808$label[which(us1808$arrowsize == 0)] <- us1808$yearam[which(us1808$arrowsize == 0)]
+
+mp + geom_net(data= us1808, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE,  vjust = runif(175,-2,0),hjust=runif(175,0,1), labelcolour = 'navy', size = .5,
+              color = 'navy',
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, label = label
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
+@
+
+\par Next, I look at the years after Portugal banned the slave trade, from 1837 to the last year in the data, 1864.  There were 778 trans-Atlantic slave trade voyages in that time, and they are shown in \autoref{fig:postban}. Most of these are Portuguese ships, with US and Spanish ships close behind, and nearly all of the trips are to Brazil and the Caribbean.  Interestingly, the most prolific slave trading country, Great Britain, does not appear at all, suggesting that they were most successful in enforcing their bans on slave trade. In fact, the last year that British ships participated in the slave trade was 1810, with only one voyage that year. There were 33 other voyages after the ban, all landing in the Americas in 1808. Given the time it takes to travel across the Atlantic by ship, it is probable that most of those 33 trips began before the slave trade was made illegal.  
+
+<<postban, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All US ships still participating in the slave trade after its ban in the US in 1807.", fig.pos='h'>>=
+postban <- create_net_data3(edge_data = filter(from_to, yearam >=1837), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+#postban$label <- ""
+#postban$label[which(postban$arrowsize == 1)] <- postban$yearaf[which(postban$arrowsize == 1)]
+#postban$label[which(postban$arrowsize == 0)] <- postban$yearam[which(postban$arrowsize == 0)]
+
+mp + geom_net(data= postban, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE,
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, color = natinimp, group = natinimp
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
 @
 
 \section*{Conclusion}
