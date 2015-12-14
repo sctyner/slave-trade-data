@@ -32,7 +32,7 @@
 \usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
 \usepackage{natbib}
 \usepackage{sectsty} % Enables custom section titles
-\allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
+\allsectionsfont{\usefont{OT1}{phv}{b}{n} \fontsize{12}{12}} % Change the font of all section commands
 \usepackage{hyperref}
 \usepackage{fancyhdr} % Needed to define custom headers/footers
 \pagestyle{fancy} % Enables the custom headers/footers
@@ -402,7 +402,7 @@ mp + geom_net(data= slavenet_all, layout = NULL,
 <<values, echo=FALSE>>=
 summ1807 <- from_to %>% filter(yearam ==1807) %>% summarize(n.dep = sum(slaximp), n.arr = sum(slamimp))
 @
-\par The next visualization, in \autoref{fig:biggest_year}, shows the structure of the slave trade network in its busiest year, 1807.  This was the year with the largest number of slaves ships arriving in the Americas.  There were 275 ships that sold slaves in the Americas that year, and 64,109 Africans were sold into slavery that year. And since the database also contains information on how many slaves embarked in Africa, we also know that 73,215 people began on those journeys: \Sexpr{round(as.numeric(summ1807$n.dep)) - round(as.numeric(summ1807$n.arr))} Africans died along the way. Interestingly, 1807 was also the year that both Great Britain and the United States made the slave trade illegal.\footnote{See \url{https://en.wikipedia.org/wiki/Abolition_of_slavery_timeline} for more.} We can also see from the plot that the countries' patterns of slave trade are very well-establish, 282 years after the first slave ships arrived in the Americas in 1525. British ships travelled primarily to the Caribbean, with some sales in the southern United States, while Portuguese ships only sold slaves in Brazil, and the United States ships sold slaves almost exclusively in Charleston, SC and New Orleans, LA. 
+\par The next visualization, in \autoref{fig:biggest_year}, shows the structure of the slave trade network in its busiest year, 1807.  This was the year with the largest number of slaves ships arriving in the Americas.  There were 275 ships that sold slaves in the Americas that year, and 64,109 Africans were sold into slavery that year. And since the database also contains information on how many slaves embarked in Africa, we also know that 73,215 people began on those journeys: \Sexpr{round(as.numeric(summ1807$n.dep)) - round(as.numeric(summ1807$n.arr))} Africans died along the way. Interestingly, 1807 was also the year that both Great Britain and the United States made the slave trade illegal.\footnote{See \url{https://en.wikipedia.org/wiki/Abolition_of_slavery_timeline} for more.} We can also see from the plot that the countries' patterns of slave trade are very well-establish 282 years after the first slave ships arrived in the Americas in 1525. British ships travelled primarily to the Caribbean, with some sales in the southern United States, while Portuguese ships only sold slaves in Brazil, and the United States ships sold slaves almost exclusively in Charleston, SC and New Orleans, LA. 
 
 <<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.", fig.pos='h'>>=
 st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
@@ -410,19 +410,21 @@ st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "y
 mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
               ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp, arrowsize = arrowsize, group = natinimp, curvature = .2)) + 
+              color = natinimp, arrowsize = arrowsize, group = natinimp, curvature = .2)) +
+  scale_color_brewer(palette = 'Set1') + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
-<<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809.">>=
+\par British ships also made more trips than any other country in the slave trade. From 1562 to 1809, British ships made 7,585 trips carrying over 2.1 \emph{million} Africans, and selling over 1.8 million into slavery, with nearly 300,000 total deaths along the way. On average, a British slave ship carried about 283 Africans, 39 of which died along the way. From the visualization of Great Britain's participation in the slave trade in \autoref{fig:gb}, we see that the vast majority of the British ships made voyages in the $18^{th}$ century. The British empire was extremely influential, and their ships sold Africans into slavery everywhere in the Americas: from New York in the United States, to Montevideo in Uruguay, and almost everywhere with a port in between. A noticeable gap exists in Brazil, where the Portuguese had a near monopoly on the slave trade.
+
+<<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809. Color represents the century in which the ship departed Africa with slaves.", fig.pos='h'>>=
 stgb <- create_net_data3(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
-library(RColorBrewer)
-fourcolors <- brewer.pal(4,"YlGnBu")
-# How to get edge colors to work??? ecolour = fourcolors[as.numeric(as.factor(stgb$century))]
-mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
+
+mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1, curvature = .2,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = as.factor(century), group = century, arrowsize= arrowsize)) + 
+  scale_color_brewer(palette = 'Spectral', name = 'Century') + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
@@ -435,25 +437,28 @@ mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arro
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
-<<slaves_size_pts, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Size of points represents the number of slaves embarked and disembarked on each voyage.">>=
-  from_to$arrowlength <- 10
-  from_to2 <- from_to
-  from_to2[,"mjbyptimp"] <- from_to[,"mjslptimp"]
-  from_to2[,"mjslptimp"] <- from_to[,"mjbyptimp"]
-  from_to2$slaximp <- from_to$slamimp
-  from_to2$arrowlength <- 0
-  from_to3 <- rbind(from_to, from_to2)
-  nodes1 <- unique(as.character(from_to$mjbyptimp))
-  nodes2 <- unique(as.character(from_to$mjslptimp))
+\par For British ships overall, about 13.7\% of all Africans died before even reaching the port where they were sold into slavery. This is comparable to ships from Spain, the Netherlands, France, and Denmark, which all had death rates of about 13.6\%, 14.0\%, 13.3\%, and 13.9\%, respectively.  Portuguese ships had the smallest rate of journey deaths, at about 10.1\%, while the American (USA) ships had the highest death rate, at about 16.3\%. In the next visualization, \autoref{fig:slaves_usa}, the points at the ports are sized by the number of slaves embarked if a departure port or disembarked if a port of slave sale. Most of the points in Africa look bigger than the ports in the Americas, demonstrating the 16.3\% rate of deaths. We also see that the U.S.-owned slave ships did not only sell slaves in the United States. The majority of them, like the British ships, sold slaves in the Caribbean and not in the U.S. 
+
+<<slaves_usa, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "All slave trade ship voyages by U.S. ships. Size of points represents the number of slaves embarked and disembarked on each voyage.", fig.pos='h'>>=
+  usa <- subset(from_to, natinimp == 'USA')
+  usa$arrowlength <- 1
+  usa2 <- usa
+  usa2[,"mjbyptimp"] <- usa[,"mjslptimp"]
+  usa2[,"mjslptimp"] <- usa[,"mjbyptimp"]
+  usa2$slaximp <- usa$slamimp
+  usa2$arrowlength <- 0
+  usa3 <- rbind(usa, usa2)
+  nodes1 <- unique(as.character(usa3$mjbyptimp))
+  nodes2 <- unique(as.character(usa3$mjslptimp))
   nodes <- unique(c(nodes1, nodes2))
   node_idx <- which(ports$name %in% nodes)
-  ports <- ports[node_idx,]
-  size_node_data <- merge(from_to3, ports, by.x = "mjbyptimp", by.y = "name", all = T)
+  ports3 <- ports[node_idx,]
+  usa_death_data <- merge(usa3, ports, by.x = "mjbyptimp", by.y = "name", all = T)
 
-mp + geom_net(data= size_node_data, layout = NULL, 
-              ealpha = .15, arrowgap = 1, directed = TRUE, 
+mp + geom_net(data= usa_death_data, layout = NULL, 
+              ealpha = .1, arrowgap = 1, directed = TRUE,color = "#ff7f00", curvature = .2,
               aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-                  color = natinimp, size = slaximp, arrowsize = arrowlength/10)) +
+                   size = slaximp, arrowsize = arrowlength)) +
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) 
 @
 
