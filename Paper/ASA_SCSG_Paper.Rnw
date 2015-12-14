@@ -329,14 +329,16 @@ ports$country <- coords2country(ports[,c('longitude','latitude')])
 
 # function to create a data set appropirate for network plotting. 
 # variable, from_id, to_id, node_id need to be characters. value needs to be character or numeric. 
-create_net_data2 <- function(edge_data, node_data, variable = NULL, value = NULL, from_id, to_id, node_id){
+create_net_data3 <- function(edge_data, node_data, variable = NULL, value = NULL, from_id, to_id, node_id){
   if (!is.null(variable) && !is.null(value)){
     idx <- which(edge_data[, variable] %in% value)
     edge_data <- edge_data[idx,]
   } else{edge_data <- edge_data}
+  edge_data$arrowsize <- 1
   edge_data2 <- edge_data
   edge_data2[,from_id] <- edge_data[,to_id]
   edge_data2[,to_id] <- edge_data[,from_id]
+  edge_data2$arrowsize <- 0
   edge_data <- rbind(edge_data, edge_data2)
   nodes1 <- unique(as.character(edge_data[,from_id]))
   nodes2 <- unique(as.character(edge_data[,to_id]))
@@ -369,7 +371,7 @@ mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
 mp <- ggplot() +   mapWorld 
 theme_set(theme_bw())
 
-slavenet_all <- create_net_data2(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 # from_to_lat <- merge(from_to, ports[,c("name", "longitude", "latitude")], by.x="mjbyptimp", by.y="name")
 # from_to_lat <- merge(from_to_lat, ports[,c("name", "longitude", "latitude")], by.x="mjslptimp", by.y="name")
@@ -382,7 +384,7 @@ slavenet_all <- create_net_data2(edge_data = from_to, node_data = ports, variabl
 mp + geom_net(data= slavenet_all, layout = NULL, 
               directed = TRUE, ealpha = .15, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp)) +
+              color = natinimp, arrowsize = arrowsize)) +
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 
 # mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
@@ -395,29 +397,29 @@ mp + geom_net(data= slavenet_all, layout = NULL,
 @
 
 <<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.">>=
-st1807 <- create_net_data2(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
               ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp)) + 
+              color = natinimp, arrowsize = arrowsize)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
 <<gb, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade routes run by British ships, 1562-1809.">>=
-stgb <- create_net_data2(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+stgb <- create_net_data3(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 library(RColorBrewer)
 fourcolors <- brewer.pal(4,"YlGnBu")
 # How to get edge colors to work??? ecolour = fourcolors[as.numeric(as.factor(stgb$century))]
 mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = as.factor(century), group = century)) + 
+              color = as.factor(century), group = century, arrowsize= arrowsize)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
 <<deaths,echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage.">>=
-stdeaths <- create_net_data2(edge_data = subset(from_to, sladeath >=0), node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+stdeaths <- create_net_data3(edge_data = subset(from_to, sladeath >=0), node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
