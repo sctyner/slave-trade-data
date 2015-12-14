@@ -33,7 +33,7 @@
 \usepackage{natbib}
 \usepackage{sectsty} % Enables custom section titles
 \allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
-
+\usepackage{hyperref}
 \usepackage{fancyhdr} % Needed to define custom headers/footers
 \pagestyle{fancy} % Enables the custom headers/footers
 \usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
@@ -69,9 +69,9 @@
 
 \newcommand{\HorRule}{\color{black} \rule{\linewidth}{1pt}} % Defines the gold horizontal rule around the title
 
-\pretitle{\vspace{-50pt} \begin{flushleft} \HorRule \fontsize{20}{20} \usefont{OT1}{phv}{b}{n} \color{black} \selectfont} % Horizontal rule before the title
+\pretitle{\vspace{-50pt} \begin{flushleft} \HorRule \fontsize{15}{15} \usefont{OT1}{phv}{b}{n} \color{black} \selectfont} % Horizontal rule before the title
 
-\title{Vizualizing the African Slave Trade, 1514 - 1866} % Your article title
+\title{Using the \texttt{geomnet} Package: Visualizing African Slave Trade, 1514 - 1866} % Your article title
  % This should probably reference geomnet. Don't want it to be too long though
 \posttitle{\par\end{flushleft}\vskip 0em} % Whitespace under the title
 
@@ -137,6 +137,7 @@ Iowa State University % Your institution
   \item \texttt{arrowgap}: if \texttt{directed = TRUE}, use this parameter to avoid overplotting of arrowheads by shrinking the length of the edge by a small amount (e.g. \texttt{arrowgap = 0.05});
   \item \texttt{selfies}: if a network contains self-referencing edges, where from and to node are identical, then set \texttt{selfies = TRUE} to view these edges;
   \item \texttt{label}: can be a logical value or a data variable. If set to \texttt{TRUE}, the node names are used to label the nodes. If set to a data variable, the variable should be a character variable of names with which to label nodes. Position can be adjusted with \texttt{hjust} or \texttt{vjust};
+  \st{XXX check these. add more? XXX}
   \end{itemize}
 The required aesthetic options are 
   \begin{itemize}
@@ -145,14 +146,11 @@ The required aesthetic options are
   \end{itemize}
   Other aesthetic options available to the user, besides the usual options for \texttt{geom\_point} and \texttt{geom\_segment}, are
   \begin{itemize}
-  \item \texttt{x} and \texttt{y}: if \texttt{layout = NULL}, \texttt{x} and \texttt{y} set the locations of the nodes (e.g. longitude and latitude)
+  \item \texttt{x} and \texttt{y}: if \texttt{layout = NULL}, \texttt{x} and \texttt{y} set the locations of the nodes (e.g. longitude and latitude)  \st{XXX add more? XXX}
   \end{itemize}
 
 %-----------------------------------------------------------------------------  
-\section*{Visualizing the data}  
-
-\st{XXX show yearly breakdowns, country breakdowns, etc. }
-
+% Section : Visualizing the Data
 <<setup, echo=FALSE>>=
 datadir=".."
 
@@ -349,7 +347,11 @@ create_net_data3 <- function(edge_data, node_data, variable = NULL, value = NULL
 }
 @
 
-<<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1519 - 1864.">>=
+\section*{Visualizing the data}  
+
+I start by visualizing all of the data I pulled from the database on one map. This first visualization, shown in \autoref{fig:whole_dataset_plot}, contains all of the voyages from 1525 - 1864 between Africa and the Americas. We can see that most slaves were brought to islands in the Caribbean, with the most traffic from by British, French, and Spanish ships. The two smallest countries involved, Portugal and the Netherlands, appear to have had almost total control of the slave trade in Brazil and on the north coast of South America, respectively. And in the United States, most of the ships that arrive bringing slaves are British or French ships, reflecting the control the British and the French had of those territories before the Revolutionary War. A drawback of this plot is that the data set contains 18,117 voyages, so there is over-plotting. And though I use the \texttt{ealpha} parameter in \texttt{geomnet} to alleviate some of it, but the points are still over-plotted, so I focus next on exploring specific interesting subsets of the data. 
+
+<<whole_dataset_plot, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1525 - 1864.", fig.pos='h'>>=
 library(ggplot2)
 library(geomnet)
 
@@ -369,7 +371,7 @@ mp <- NULL
 #mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
 mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
 mp <- ggplot() +   mapWorld 
-theme_set(theme_bw())
+theme_set(theme_bw() + theme(aspect.ratio = 1))
 
 slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
@@ -382,9 +384,10 @@ slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variabl
 
 # I think arrowgap is behaving weirdly. color is also behaving weirdly
 mp + geom_net(data= slavenet_all, layout = NULL, 
-              directed = TRUE, ealpha = .15, arrowgap = 1,
+              directed = TRUE, ealpha = .1, arrowgap = 1, curvature = .2,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp, arrowsize = arrowsize)) +
+              color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
+  scale_color_brewer(palette = 'Set1') + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 
 # mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
@@ -396,13 +399,18 @@ mp + geom_net(data= slavenet_all, layout = NULL,
 #   guides(colour = guide_legend(override.aes = list(alpha=1)))
 @
 
-<<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.">>=
+<<values, echo=FALSE>>=
+summ1807 <- from_to %>% filter(yearam ==1807) %>% summarize(n.dep = sum(slaximp), n.arr = sum(slamimp))
+@
+\par The next visualization, in \autoref{fig:biggest_year}, shows the structure of the slave trade network in its busiest year, 1807.  This was the year with the largest number of slaves ships arriving in the Americas.  There were 275 ships that sold slaves in the Americas that year, and 64,109 Africans were sold into slavery that year. And since the database also contains information on how many slaves embarked in Africa, we also know that 73,215 people began on those journeys: \Sexpr{round(as.numeric(summ1807$n.dep)) - round(as.numeric(summ1807$n.arr))} Africans died along the way. Interestingly, 1807 was also the year that both Great Britain and the United States made the slave trade illegal.\footnote{See \url{https://en.wikipedia.org/wiki/Abolition_of_slavery_timeline} for more.} We can also see from the plot that the countries' patterns of slave trade are very well-establish, 282 years after the first slave ships arrived in the Americas in 1525. British ships travelled primarily to the Caribbean, with some sales in the southern United States, while Portuguese ships only sold slaves in Brazil, and the United States ships sold slaves almost exclusively in Charleston, SC and New Orleans, LA. 
+
+<<biggest_year, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.", fig.pos='h'>>=
 st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
               ealpha = .3, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp, arrowsize = arrowsize)) + 
+              color = natinimp, arrowsize = arrowsize, group = natinimp, curvature = .2)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
@@ -418,13 +426,35 @@ mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 @
 
-<<deaths,echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage.">>=
+<<deaths,echo = FALSE, eval = FALSE, message=FALSE,warning=FALSE, fig.cap="Visualizing deaths of captives during trip. The wider the edge, the more deaths there were on the voyage.">>=
 stdeaths <- create_net_data3(edge_data = subset(from_to, sladeath >=0), node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
 
 mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               linewidth = sladeath/20)) + 
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+@
+
+<<slaves_size_pts, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Size of points represents the number of slaves embarked and disembarked on each voyage.">>=
+  from_to$arrowlength <- 10
+  from_to2 <- from_to
+  from_to2[,"mjbyptimp"] <- from_to[,"mjslptimp"]
+  from_to2[,"mjslptimp"] <- from_to[,"mjbyptimp"]
+  from_to2$slaximp <- from_to$slamimp
+  from_to2$arrowlength <- 0
+  from_to3 <- rbind(from_to, from_to2)
+  nodes1 <- unique(as.character(from_to$mjbyptimp))
+  nodes2 <- unique(as.character(from_to$mjslptimp))
+  nodes <- unique(c(nodes1, nodes2))
+  node_idx <- which(ports$name %in% nodes)
+  ports <- ports[node_idx,]
+  size_node_data <- merge(from_to3, ports, by.x = "mjbyptimp", by.y = "name", all = T)
+
+mp + geom_net(data= size_node_data, layout = NULL, 
+              ealpha = .15, arrowgap = 1, directed = TRUE, 
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                  color = natinimp, size = slaximp, arrowsize = arrowlength/10)) +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) 
 @
 
 \section*{Conclusion}
