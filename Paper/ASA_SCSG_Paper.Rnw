@@ -534,9 +534,21 @@ mp + geom_net(data= postban, layout = NULL, ealpha = .4, arrowgap = 1,
   theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
 @
 
+\par Finally, I look at the trans-Atlantic slave trade as a traditional network, ignoring the geographical locations of the ports, in order to see which ports played the most central roles in the slave trade. For this visualization I explore a country that we have not yet seen: Spain. Spanish ships made 444 total trips from 1593 to 1859, taking 142,645 people from Africa and selling 123,186 of them into slavery, with 19,459 people dying on the voyage. In \autoref{fig:spain}, I used the Fructerman-Reingold force-directed layout to arrange the nodes and I sized the width of the lines according to the number of slaves on a voyage using \texttt{linewidth}.  The most common points of slave sale are the port of Havana in Cuba, and all other ports in Cuba, as well as the port of Cartagena in Colombia and unspecified ports in Sierra Leone. The frequency of trips \emph{to} Sierra Leone is unusual. As Sierra Leone is a country on the west coast of Africa, I would have expected it to be a port of embarkation instead of a point of disembarkation. The `from' ports of trips taking slaves to Sierra Leone, however, are also in Africa. This suggests that many Spanish slaving ships profited by taking Africans from all over the continent to Sierra Leone to then be sold to another ship's owner and taken across the Atlantic. 
+
+<<spain, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="The network of slave trade by Spanish ships from 1593 to 1859. ", fig.pos='h'>>=
+spain <- create_net_data3(edge_data = from_to, node_data = ports, variable ="natinimp", value = "Spain / Uruguay", from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+spain$mjbyptimp <- sub(', port unspecified', '', spain$mjbyptimp)
+spain$mjslptimp <- sub(', port unspecified', '', spain$mjslptimp)
+
+ggplot() + geom_net(data= spain, directed = TRUE, layout = 'fruchtermanreingold',ealpha = .2, arrowgap = .01, vjust = -.2,
+          aes(from_id = mjbyptimp, to_id=mjslptimp, arrowsize= arrowsize, label = mjbyptimp, linewidth = slaximp/100)) + lims(x = c(-.1,1.1), y = c(-.1,1.1))
+@
+
 \section*{Conclusion}
 
-\st{XXX talk about what I learned from these visualizations, historical importance \& understanding?}
+After exploring the Trans-Atlantic Slave Trade Database, I have a much deeper understanding of the slave trade any history class has ever given me. 
+
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
