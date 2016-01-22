@@ -490,14 +490,14 @@ firstyears75$label[which(firstyears75$arrowsize == 1)] <- firstyears75$mjbyptimp
 firstyears75$label[which(is.na(firstyears75$label))] <- firstyears75$mjslptimp[which(firstyears75$arrowsize == 1)]
 firstyears75$label <- sub(", port unspecified", '', firstyears75$label)
 
-
-mp + geom_net(data= firstyears75, layout = NULL, ealpha = .4, arrowgap = 1, 
+mp2 <- ggplot() + myborders(xlim= c(-105,75), ylim = c(-25,30))
+mp2 + geom_net(data= firstyears75, layout = NULL, ealpha = .4, arrowgap = 1, 
               directed = TRUE, vjust = 1,hjust=-.05, labelcolour = 'black',
               aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
                    arrowsize = arrowsize, color = natinimp, group = natinimp#, label = label
                   )) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-25,30)) 
+  theme(legend.position = 'bottom') 
 @
 
 \par I also consider the last years of the slave trade. The last year of the slave trade was 1864, and only one ship sold slaves in the Americas that year: a French ship carried 673 Africans from the Congo River area and sold them into slavery in Cuba despite the fact that the slave trade was outlawed in France over 40 years prior in 1818. The last country in the dataset to abolish the slave trade was Portugal, in 1836, yet the slave trade continued for almost two decades more, albeit at a much slower pace. The American ships that were still trading after 1807 were able to do so because the slave trade ban in the U.S. technically only prohibited import of new slaves to the United States. American slave ships still participated in the slave trade by mostly avoiding ports in US territory, selling slaves in the Caribbean and South America instead. This is shown in \autoref{fig:us1808}, with the years of disembarkation and embarkation of slaves printed using the \texttt{label} aesthetic. There is some over-plotting of the labels, but we can see that most of the slave trade routes still being run by US ships after the ban end with slaves being sold in Brazil and in Cuba, where the Portuguese slave traders were ever-present. 
@@ -508,6 +508,7 @@ us1808$label <- ""
 us1808$label[which(us1808$arrowsize == 1)] <- us1808$yearaf[which(us1808$arrowsize == 1)]
 us1808$label[which(us1808$arrowsize == 0)] <- us1808$yearam[which(us1808$arrowsize == 0)]
 
+
 mp + geom_net(data= us1808, layout = NULL, ealpha = .4, arrowgap = 1, 
               directed = TRUE,  vjust = runif(175,-2,0),hjust=runif(175,0,1), labelcolour = 'navy', size = .5,
               color = 'navy',
@@ -515,7 +516,7 @@ mp + geom_net(data= us1808, layout = NULL, ealpha = .4, arrowgap = 1,
                    arrowsize = arrowsize, label = label
                   )) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
+  theme(legend.position = 'bottom') #+ lims(x = c(-100,75), y = c(-50,50)) 
 @
 
 \par Next, I look at the years after Portugal banned the slave trade, from 1837 to the last year in the data, 1864, for all countries.  There were 778 trans-Atlantic slave trade voyages in that time, and they are shown in \autoref{fig:postban}. Most of these are Portuguese ships, with US and Spanish ships close behind, and nearly all of the trips are to Brazil and the Caribbean.  Interestingly, the most prolific slave trading country, Great Britain, does not appear at all, suggesting that they were most successful in enforcing their bans on slave trade. In fact, the last year that British ships participated in the slave trade was 1810, with only one voyage that year. There were 33 other voyages after the ban, all landing in the Americas in 1808. Given the time it takes to travel across the Atlantic by ship, it is probable that most of those 33 trips began before the slave trade was made illegal. Other countries were nowhere near as good as enforcing their bans on the slave trade. 
@@ -532,7 +533,7 @@ mp + geom_net(data= postban, layout = NULL, ealpha = .4, arrowgap = 1,
                    arrowsize = arrowsize, color = natinimp, group = natinimp
                   )) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
+  theme(legend.position = 'bottom') #+ lims(x = c(-100,75), y = c(-50,50)) 
 @
 
 \par Finally, I look at the trans-Atlantic slave trade as a traditional network, ignoring the geographical locations of the ports, in order to see which ports played the most central roles in the slave trade. For this visualization I explore a country that we have not yet seen by itself: Spain. Spanish ships made 444 total trips from 1593 to 1859, taking 142,645 people from Africa and selling 123,186 of them into slavery, with 19,459 people dying on the voyages. In \autoref{fig:spain}, I used the Fructerman-Reingold force-directed layout to arrange the nodes and I sized the width of the lines according to the number of slaves on a voyage using the \texttt{linewidth} aesthetic option \citep{fruchterman}. I also labeled a select number of port names in order to see which were most important in the Spanish slave trade network.  The most common points of slave sale are the port of Havana in Cuba, and all other ports in Cuba, as well as the port of Cartagena in Colombia and unspecified ports in Sierra Leone. The frequency of trips \emph{to} Sierra Leone is unusual. As Sierra Leone is a country on the west coast of Africa, I would have expected it to be a port of embarkation instead of a point of disembarkation. The `from' ports of trips taking slaves to Sierra Leone, however, are also in Africa. This suggests that many Spanish slaving ships profited by taking Africans from all over the continent to Sierra Leone to then be sold to another ship's owner and taken across the Atlantic. 
