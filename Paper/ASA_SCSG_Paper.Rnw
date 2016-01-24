@@ -101,6 +101,21 @@ Iowa State University % Your institution
 % The first character should be within \initial{}
 \vspace{-1cm}
 %\initial{U}\textbf{sing a new way to visualize network data in \texttt{R} with \texttt{gglot2}, I examine the evolution of the African slave trade from the $16^{th}$ through the $19^{th}$ centuries. \st{XXX I feel like I need more here. Will add more when paper is more fleshed out.}}
+
+\hh{ From the CHANCE website
++ 	Are targeted toward a broad audience
++ 	Display and discuss interesting statistical concepts, ideas, designs, analyses, or presentations
++ 	Have a relaxed expository style (humor is fine when tactful)
++ 	Do not have abstracts
++ 	Do not have acknowledgements
++ 	Have intuitive explanations with limited technical notation and formulas
++ 	Have sidebars for definitions and brief technical explanations
++ 	Do not have citations, but have a “Further Reading” section at the end of the article where ~5 references can be listed
++ 	Rarely have footnotes
++ 	Have creative and informative graphics, photographs, and tabular displays
++ 	May link to online videos (please include YouTube or Vimeo links in the word document)
++ 	Are 10--15 double-spaced type-written pages in MS Word}
+
 \initial{T}\textbf{he Trans-Atlantic Slave Trade Database, hosted by Emory University, contains information on nearly 35,000 voyages of slave ships from 1514 - 1866 between Europe, Africa, and the Americas. The entire database contains 279 variables with information on the 34,948 voyages. While the website dedicated to this data contains a dashboard to subset and visualize the data, I wanted to view the data in a new way. I use the \texttt{geomnet} package because I wanted to show that the user can visually explore the data in a way that leaves them with a deeper understanding of the structure of the slave trade. I start by visualizing all of the data I pulled from the database on one map, then I look at different subsets of it, and I end with a much deeper understanding of the slave trade and its impact on the world.}
 %----------------------------------------------------------------------------------------
 %	ARTICLE CONTENTS
