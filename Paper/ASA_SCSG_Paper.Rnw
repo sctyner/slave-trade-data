@@ -407,7 +407,8 @@ mp + geom_net(data= slavenet_all, layout = NULL,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") + 
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 
 # mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
 #   geom_point(data= from_to_lat, aes(x=longitude.y, y = latitude.y)) +
@@ -431,7 +432,8 @@ mp + geom_net(data= st1807, layout = NULL, directed = TRUE,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = natinimp, arrowsize = arrowsize, group = natinimp)) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") + 
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 @
 
 \par British ships also made more trips than any other country in the slave trade. From 1562 to 1809 (a period of 247 years), British ships made 7,585 trips carrying over 2.1 \emph{million} Africans, and selling over 1.8 million into slavery, with nearly 300,000 total deaths along the way. On average, a British slave ship carried about 283 Africans, 39 of which died along the way. From the visualization of Great Britain's participation in the slave trade in \autoref{fig:gb}, we see that the vast majority of the British ships made voyages in the $18^{th}$ century. The British empire was extremely influential, and their ships sold Africans into slavery everywhere in the Americas: from New York in the United States, to Montevideo in Uruguay, and almost everywhere with a port in between. The only noticeable gap exists in Brazil, where the Portuguese had a near monopoly on the slave trade.
@@ -444,7 +446,8 @@ mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap 
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = as.factor(century), group = century, arrowsize= arrowsize)) + 
   scale_color_brewer(palette = 'Spectral', name = 'Century') + 
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 @
 
 The second largest participant in the slave trade was the country of Portugal. Portuguese ships began travelling to Africa to buy and sell slaves in 1525 and they did not stop until 1854, a span of 329 years. Portugal forced Africans into slavery for 90 years \emph{longer} than the United States of America has been a country. There have only been 179 years since they outlawed it, and only 161 years since Portugal actually stopped that practice. The impact of this is almost unimaginable. Over 1.9 \emph{million} Africans were taken by the Portuguese, and over 1.7 million were sold into slavery in the Americas, with 200,491 dying during the ocean crossing. The map of the Portuguese slave trade is given in in \autoref{fig:portugal}. The most Portuguese slave voyages occurred in the $19^{th}$ century, with 3,249 slave ship trips across the Alantic in the years 1800-1854. In those 54 years, over 1.3 \emph{million} Africans were forced across the ocean and into slavery, with 124,280 perishing along the way. The Portuguese did over two-thirds of their slave trading in the last 54 of the 329 years they participated. It's easy to imagine that it would have gotten much worse if slave trading had been outlawed later. 
@@ -456,7 +459,8 @@ mp + geom_net(data= portugal, layout = NULL, directed = TRUE, ealpha = .1, arrow
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               color = as.factor(century), group = century)) + 
   scale_color_brewer(palette = 'Spectral', name = 'Century') +
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 @
 
 
@@ -466,7 +470,8 @@ stdeaths <- create_net_data3(edge_data = subset(from_to, sladeath >=0), node_dat
 mp + geom_net(data= stdeaths , layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1,
           aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
               linewidth = sladeath/20)) + 
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))+
+  xlab("Longitude") + ylab("Latitude")
 @
 
 \par For British ships overall, about 13.7\% of all Africans died before even reaching the port where they were sold into slavery. This is comparable to ships from Spain, the Netherlands, France, and Denmark, which all had death rates of about 13.6\%, 14.0\%, 13.3\%, and 13.9\%, respectively.  Portuguese ships had the smallest rate of journey deaths, at about 10.1\%, while the American (USA) ships had the highest death rate, at about 16.3\%. In the next visualization, \autoref{fig:slaves_usa}, the points the represent the trading ports are sized by the number of slaves embarked if a departure port or disembarked if a port of slave sale. Most of the points in Africa look bigger than the ports in the Americas, demonstrating the 16.3\% rate of deaths. We also see that the U.S.-owned slave ships did not only sell slaves in the United States. The majority of them, like the British ships, sold slaves in the Caribbean and not in the U.S. All in all, American ships were responsibe for forcing 141,050 Africans overseas and into slavery, with 22,955 dying on the voyage. And, of the 118,095 slaves sold into slavery by American ships, 30,754 of them actually ended up in the United States, while the rest were sold into slavery in the Caribbean and South America.
@@ -493,7 +498,8 @@ mp + geom_net(data= usa_death_data, layout = NULL,
                    size = slaximp, arrowsize = arrowlength, colour = slaximp)) +
   scale_color_gradient(low = 'red', high = 'blue', name = "Number of Slaves") +
   scale_size_continuous(name = 'Number of Slaves') + 
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 @
 
 \par Next I explore the evolution of the slave trade over time. In the first twenty-five years of slaves being sold in the Americas, from 1525-1550, there were only two voyages that arrived. Both were Portuguese ships carrying 300 slaves from S\~{a}o Tom\'{e} in the Gulf of Guinea to the Caribbean. In \autoref{fig:first_years} the first 75 years of voyages, from 1525 to 1600 are shown. There are 98 voyages in these first years, taking 20,951 Africans from their homes and selling 15,322 of them into slavery, with 5,629 dying during the trip across the Atlantic. The only countries participating in in the slave trade in these first years are Spain, Portugal, and Great Britain, and they are only embarking and disembarking at 20 different ports: ten in Africa and ten in the Americas. We can see that Portugal had not yet focused on selling slaves exclusively in Brazil, and the Spanish only sold slaves in modern-day Venezuela. 
@@ -531,7 +537,8 @@ mp + geom_net(data= us1808, layout = NULL, ealpha = .4, arrowgap = 1,
                    arrowsize = arrowsize, label = label
                   )) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') #+ lims(x = c(-100,75), y = c(-50,50)) 
+  theme(legend.position = 'bottom') + # lims(x = c(-100,75), y = c(-50,50)) +
+  xlab("Longitude") + ylab("Latitude")
 @
 
 \par Next, I look at the years after Portugal banned the slave trade, from 1837 to the last year in the data, 1864, for all countries.  There were 778 trans-Atlantic slave trade voyages in that time, and they are shown in \autoref{fig:postban}. Most of these are Portuguese ships, with US and Spanish ships close behind, and nearly all of the trips are to Brazil and the Caribbean.  Interestingly, the most prolific slave trading country, Great Britain, does not appear at all, suggesting that they were most successful in enforcing their bans on slave trade. In fact, the last year that British ships participated in the slave trade was 1810, with only one voyage that year. There were 33 other voyages after the ban, all landing in the Americas in 1808. Given the time it takes to travel across the Atlantic by ship, it is probable that most of those 33 trips began before the slave trade was made illegal. Other countries were nowhere near as good as enforcing their bans on the slave trade. 
@@ -548,7 +555,8 @@ mp + geom_net(data= postban, layout = NULL, ealpha = .4, arrowgap = 1,
                    arrowsize = arrowsize, color = natinimp, group = natinimp
                   )) +
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') #+ lims(x = c(-100,75), y = c(-50,50)) 
+  theme(legend.position = 'bottom')+
+  xlab("Longitude") + ylab("Latitude") #+ lims(x = c(-100,75), y = c(-50,50)) 
 @
 
 \par Finally, I look at the trans-Atlantic slave trade as a traditional network, ignoring the geographical locations of the ports, in order to see which ports played the most central roles in the slave trade. For this visualization I explore a country that we have not yet seen by itself: Spain. Spanish ships made 444 total trips from 1593 to 1859, taking 142,645 people from Africa and selling 123,186 of them into slavery, with 19,459 people dying on the voyages. In \autoref{fig:spain}, I used the Fructerman-Reingold force-directed layout to arrange the nodes and I sized the width of the lines according to the number of slaves on a voyage using the \texttt{linewidth} aesthetic option \citep{fruchterman}. I also labeled a select number of port names in order to see which were most important in the Spanish slave trade network.  The most common points of slave sale are the port of Havana in Cuba, and all other ports in Cuba, as well as the port of Cartagena in Colombia and unspecified ports in Sierra Leone. The frequency of trips \emph{to} Sierra Leone is unusual. As Sierra Leone is a country on the west coast of Africa, I would have expected it to be a port of embarkation instead of a point of disembarkation. The `from' ports of trips taking slaves to Sierra Leone, however, are also in Africa. This suggests that many Spanish slaving ships profited by taking Africans from all over the continent to Sierra Leone to then be sold to another ship's owner and taken across the Atlantic. 
