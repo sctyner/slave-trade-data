@@ -181,6 +181,7 @@ head(from_to)
 
 from_to$yeardep <- data$yeardep[which(data$voyageid %in% from_to$voyageid)]
 from_to$yearaf <- data$yearaf[which(data$voyageid %in% from_to$voyageid)]
+from_to$yearam <- data$yearam[which(data$voyageid %in% from_to$voyageid)]
 from_to$sladeath <- from_to$slaximp - from_to$slamimp
 
 from_to <- from_to[-which(from_to$mjslptimp == "???"),]

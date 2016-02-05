@@ -7,7 +7,7 @@ library(lubridate)
 
 # load slave trade database data
 library(foreign)
-st <- read.spss("tastdb-exp-2010.sav")
+st <- foreign::read.spss("tastdb-exp-2010.sav")
 str(st)
 labels <- attr(st, "label.table")
 data <- data.frame(st)
