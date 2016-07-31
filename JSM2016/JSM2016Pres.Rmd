@@ -1,0 +1,508 @@
+---
+title: 'Using the `geomnet` Package: Visualizing African Slave Trade,<br>1514 - 1866'
+author: "Sam Tyner"
+date: "31 Jul 2016"
+output: ioslides_presentation
+---
+
+## Outline
+
+>- Introduction
+>- The `geomnet` Package
+>- Visualizing the Data
+>- Conclusion
+
+## The Data Source
+
+[The Trans-Atlantic Slave Trade Database](http://www.slavevoyages.org/)
+
+- hosted by Emory University 
+- 35,000 voyages of slave ships
+- Covers 1514 - 1866 
+- Europe, Africa, The Americas 
+
+## The Data
+
+The database is [huge](https://youtu.be/9V3-GAsMEHQ)! 
+
+- 279 variables on the 34,948 voyages
+- e.g. ship's owner & country of origin; the number of men, women, and children that were taken; the outcome of the voyage. 
+- 22/279 variables are imputed - lots of missing data elsewhere
+- Using only imputed variables - most complete picture
+  
+## Existing Visualizations
+
+- [Hosted by the database](http://www.slavevoyages.org/voyage/search)
+- [Slate Magazine](http://www.slate.com/articles/life/the_history_of_american_slavery/2015/06/animated_interactive_of_the_history_of_the_atlantic_slave_trade.html)
+- [Georgetown University](http://mcb226.github.io/SlaveTrade/)
+
+> My goal: Visually explore the data in a way that leaves viewers with a deeper understanding of the structure and extent of the slave trade.
+
+## Questions to Explore
+
+>- Which countries engaged in the most slave trade?
+>- Where were the most slaves bought and sold? 
+>- How did the structure of the slave trade change over time? 
+
+## The `geomnet` Package
+
+- Can now be installed from CRAN: `install.packages("geomnet")`
+- Built on `ggplot2`
+- Key function: `geom_net()`
+
+> Why a new package?
+
+- Other packages: `network`, `sna`, etc
+- More network familiarity required
+- `geomnet` only needs data frames
+- Users of the "tidyverse" of packages will find it intuitive
+
+## Data for `geom_net()`
+
+- 2 sets of information in networks: node data and edge data 
+- Node data: node ids and information on the nodes
+- Edge data: `from` node id and `to` node id for each each edge and information on the edges
+- Node and edge data must be merged
+
+## Data Example
+
+```{r example, echo=FALSE}
+library(ggplot2)
+library(geomnet)
+nodes <- data.frame(id = letters[1:5], color = c('red','blue','red','blue','red'))
+edges <- data.frame(from_id = letters[c(1:5, 1:5)], to_id = letters[sample(1:5, 10, replace = T)])
+levels(nodes$color) <- c("red", "blue")
+nodes
+edges
+```
+
+## Merge Data
+
+```{r example2, echo=TRUE}
+combined <- merge(edges, nodes, by.x = 'from_id', by.y = 'id', all = T)
+combined
+```
+
+## Example Plot & Code
+
+```{r plotex, echo=T, message=FALSE, warning = FALSE, fig.align='center', fig.height=4}
+ggplot(data = combined) + geom_net(aes(from_id = from_id, to_id=to_id, 
+ color = color, group = color), selfies = T, directed = T, label = T, 
+ labelcolour = 'black', curvature = .1) + theme_net()
+```
+
+
+## Other `geom_net()` Arguments
+
+- For layouts: `layout, layout.par, fiteach`
+- For directed networks: `arrowsize, arrow, arrowgap`
+- For edges: `ealpha, ecolour`
+
+```{r datadir, echo=FALSE}
+#datadir=".."
+```
+
+```{r cleandata, echo=FALSE, cache=TRUE, message=FALSE,warning=FALSE}
+library(foreign)
+setwd("~/Desktop/NetworksResearch/SlaveTradeDatabase")
+st <- read.spss("tastdb-exp-2010.sav")
+labels <- attr(st, "label.table")
+fulldata <- data.frame(st)
+completes <- which(fulldata$fate2 %in% c("Slaves disembarked Americas", "Slaves disembarked in Africa/Europe"))
+
+# 'ptdepimp'=origin port of ship, 'mjbyptimp'=port where slaves taken aboard, 'mjslptimp'=port where slaves were left, 'slaximp'= # slaves departed from africa, 'slamimp'= # slaves arrived in americas,  'natinimp'=nation of ship
+
+from_to <- na.omit(fulldata[completes,c('voyageid','ptdepimp', 'mjbyptimp', 'mjslptimp', 'slaximp', 'slamimp', 'natinimp')])
+
+library(dplyr)
+library(magrittr)
+from_to$ptdepimp %<>% as.character
+from_to$mjbyptimp %<>% as.character
+from_to$mjslptimp %<>% as.character
+
+json_file <-  "locations_json.txt"
+json_data <- rjson::fromJSON(file=json_file)
+loc.type <- NULL
+for (i in 1:931){
+  type1 <- plyr::ldply(json_data[[i]][[2]])
+  loc.type <- rbind(loc.type, type1)
+}
+
+broadregion.idx <- which(loc.type[,1] == 'voyage.broadregion')
+place.idx <- which(loc.type[,1] == 'voyage.place')
+region.idx <- which(loc.type[,1] == 'voyage.region')
+
+broadregion.info <- NULL
+for (i in broadregion.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  broadregion.info <- rbind(broadregion.info, info)
+}
+
+broadregion.info %<>% arrange(.id)
+broadregion.info2 <- data.frame(value = broadregion.info[29:35,2], location.type = 'broad_region', location.name = broadregion.info[1:7,2],
+                                latitude = broadregion.info[8:14,2], longitude = broadregion.info[15:21,2])
+
+place.info <- NULL
+for (i in place.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  place.info <- rbind(place.info, info)
+}
+place.info %<>% arrange(.id)
+place.info2 <- data.frame(value = place.info[4993:5824,2], location.type = 'place', location.name = place.info[1665:2496,2],
+           latitude = place.info[1:832,2], longitude = place.info[833:1664,2])
+
+region.info <- NULL
+for (i in region.idx){
+  info <- plyr::ldply(json_data[[i]][[3]])
+  region.info <- rbind(region.info, info)
+}
+region.info %<>% arrange(.id)
+region.info2 <- data.frame(value = region.info[553:644,2], location.type = 'region', location.name = region.info[277:368,2],
+           latitude = region.info[93:184,2], longitude = region.info[185:276,2])
+locations.info <- rbind(broadregion.info2, region.info2, place.info2)
+locations.info$value %<>% as.character %<>% as.numeric
+locations.info$location.name %<>% as.character
+locations.info$longitude %<>% as.character %<>% as.numeric
+locations.info$latitude %<>% as.character %<>% as.numeric
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Guadaloupe, port unspecified")] <- "Guadeloupe, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "St. Paul de Loanda")] <- "St. Paul"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "St. Paul de Loanda")] <- "St. Paul"
+from_to$mjslptimp[which(from_to$mjslptimp == "St. Paul de Loanda")] <- "St. Paul"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "New York, port unspecified")] <- "New York"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "New York, port unspecified")] <- "New York"
+from_to$mjslptimp[which(from_to$mjslptimp == "New York, port unspecified")] <- "New York"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Marseille")] <- "Marseilles"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Marseille")] <- "Marseilles"
+from_to$mjslptimp[which(from_to$mjslptimp == "Marseille")] <- "Marseilles"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Saint John")] <- "Saint John (Antigua)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Saint John")] <- "Saint John (Antigua)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Saint John")] <- "Saint John (Antigua)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Senegal")] <- "French Africa (Goree or Senegal)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Bance Island")] <- "Bance Island (Ben's Island)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Cape Mount")] <- "Cape Mount (Cape Grand Mount)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+from_to$mjslptimp[which(from_to$mjslptimp == "Anomabu, Adja, Agga")] <- "Anomabu"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+from_to$mjslptimp[which(from_to$mjslptimp == "Windward + Ivory + Gold +  Benin")] <- "Windward + Ivory + Gold + Benin"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Sestos")] <- "Young Sestos"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Sestos")] <- "Young Sestos"
+from_to$mjslptimp[which(from_to$mjslptimp == "Sestos")] <- "Young Sestos"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Côte de Malaguette")] <- "Côte de Malaguette (runs through to Cape Palmas on Windward Coast)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Sugary")] <- "Sugary (Siekere)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Sugary")] <- "Sugary (Siekere)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Sugary")] <- "Sugary (Siekere)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Surinam")] <- "Suriname"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Surinam")] <- "Suriname"
+from_to$mjslptimp[which(from_to$mjslptimp == "Surinam")] <- "Suriname"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Newcastle")] <- "Newcastle (Nevis)"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Newcastle")] <- "Newcastle (Nevis)"
+from_to$mjslptimp[which(from_to$mjslptimp == "Newcastle")] <- "Newcastle (Nevis)"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Vera Cruz")] <- "Veracruz"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Vera Cruz")] <- "Veracruz"
+from_to$mjslptimp[which(from_to$mjslptimp == "Vera Cruz")] <- "Veracruz"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Spanish Central America, port unspecified")] <- "Spanish Americas, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Santo Domingo, port unspecified")] <- "Saint-Domingue, port unspecified"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "La Guiara")] <- "La Guaira"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "La Guiara")] <- "La Guaira"
+from_to$mjslptimp[which(from_to$mjslptimp == "La Guiara")] <- "La Guaira"
+
+from_to$ptdepimp[which(from_to$ptdepimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+from_to$mjbyptimp[which(from_to$mjbyptimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+from_to$mjslptimp[which(from_to$mjslptimp == "Spanish West Indies, colony unspecified")] <- "Spanish Caribbean, unspecified"
+
+from_to$yeardep <- fulldata$yeardep[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$yearaf <- fulldata$yearaf[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$yearam <- fulldata$yearam[which(fulldata$voyageid %in% from_to$voyageid)]
+from_to$sladeath <- from_to$slaximp - from_to$slamimp
+
+from_to <- from_to[-which(from_to$mjslptimp == "???"),]
+from_to <- from_to[-grep('074', as.character(from_to$mjbyptimp)),]
+from_to$century <- as.numeric(substr(as.character(from_to$yeardep), 1,2)) + 1
+
+ports <- data.frame(name = unique(c(unique(from_to$ptdepimp), unique(from_to$mjbyptimp), unique(from_to$mjslptimp))), stringsAsFactors = FALSE)
+
+ports <- merge(ports, locations.info, by.x = 'name', by.y = 'location.name')
+
+library(sp)
+coords2country = function(points){  
+  countriesSP <- rworldmap::getMap(resolution='low')
+  # convert our list of points to a SpatialPoints object
+  # setting CRS directly to that from rworldmap
+  pointsSP = sp::SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = sp::over(pointsSP, countriesSP)
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+ports$country <- coords2country(ports[,c('longitude','latitude')])
+
+# function to create a data set appropirate for network plotting. 
+# variable, from_id, to_id, node_id need to be characters. value needs to be character or numeric. 
+create_net_data3 <- function(edge_data, node_data, variable = NULL, value = NULL, from_id, to_id, node_id){
+  if (!is.null(variable) && !is.null(value)){
+    idx <- which(edge_data[, variable] %in% value)
+    edge_data <- edge_data[idx,]
+  } else{edge_data <- edge_data}
+  edge_data$arrowsize <- 1
+  edge_data2 <- edge_data
+  edge_data2[,from_id] <- edge_data[,to_id]
+  edge_data2[,to_id] <- edge_data[,from_id]
+  edge_data2$arrowsize <- 0
+  edge_data <- rbind(edge_data, edge_data2)
+  nodes1 <- unique(as.character(edge_data[,from_id]))
+  nodes2 <- unique(as.character(edge_data[,to_id]))
+  nodes <- unique(c(nodes1, nodes2))
+  node_idx <- which(node_data[, node_id] %in% nodes)
+  node_data <- node_data[node_idx,]
+  net_data <- merge(edge_data, node_data, by.x = from_id, by.y = node_id, all = T)
+}
+```
+
+## Entire Network, 1525 - 1864
+
+```{r entirenetwork, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1525 - 1864.", fig.pos='h', fig.height=5, fig.align='center'}
+library(ggplot2)
+library(geomnet)
+
+myborders <- function(xlim=c(-105,75), ylim = c(-50,50)) {
+  paths <- borders("world", colour="gray50", fill=NA,
+          xlim=xlim, ylim = ylim)
+  data <- paths$data
+  data$long <- pmax(data$long, min(xlim))
+  data$long <- pmin(data$long, max(xlim))
+  data$lat <- pmax(data$lat, min(ylim))
+  data$lat <- pmin(data$lat, max(ylim))
+  paths$data <- data
+  paths
+}
+
+mp <- NULL
+#mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
+mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
+mp <- ggplot() +   mapWorld 
+theme_set(theme_bw())
+
+slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+slavenet_all <- slavenet_all %>% mutate_if(is.factor, as.character)
+
+
+# from_to_lat <- merge(from_to, ports[,c("name", "longitude", "latitude")], by.x="mjbyptimp", by.y="name")
+# from_to_lat <- merge(from_to_lat, ports[,c("name", "longitude", "latitude")], by.x="mjslptimp", by.y="name")
+
+# didn't work
+# slavenet_all2 <- create_net_data(edge_data = from_to_lat, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+
+# I think arrowgap is behaving weirdly. color is also behaving weirdly
+mp + geom_net(data= slavenet_all, layout = NULL,
+              directed = TRUE, ealpha = .1, arrowgap = 1,
+          aes(x=longitude, y = latitude,
+              from_id = mjbyptimp, to_id=mjslptimp,
+              color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+
+ggplot() + geom_net(data= slavenet_all, 
+              directed = TRUE, ealpha = .1, arrowgap = 1,
+          aes(#x=longitude, y = latitude,
+              from_id = mjbyptimp, to_id=mjslptimp,
+              color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+# 
+fuck <- cbind(slavenet_all[1:(nrow(slavenet_all)/2),], slavenet_all[(nrow(slavenet_all)/2+1):nrow(slavenet_all),])
+names(fuck)[33:34] <- c("lat2", "long2")
+names(fuck)[7] <- "natinimp1"
+ggplot() + geom_point(data= slavenet_all,
+                      aes(x=longitude, y = latitude, color = natinimp) ) + 
+  geom_segment(data = fuck, aes(x = longitude, xend = long2, y = latitude, yend = lat2, color = natinimp1))
+
+# mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
+#   geom_point(data= from_to_lat, aes(x=longitude.y, y = latitude.y)) +
+#   geom_segment(data= from_to_lat, aes(x=longitude.x, xend=longitude.y, 
+#                    y=latitude.x, yend=latitude.y, colour=natinimp), alpha=0.1) +
+#   facet_wrap(~natinimp) +
+#   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) +
+#   guides(colour = guide_legend(override.aes = list(alpha=1)))
+```
+
+## Most Trips in a Year, 1807
+```{r mosttrips, echo=FALSE}
+summ1807 <- from_to %>% filter(yearam ==1807) %>% summarize(n.dep = sum(slaximp), n.arr = sum(slamimp))
+```
+
+```{r mosttripsmap, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trade in 1807, the year with the most slave ships arriving in the Americas.", fig.pos='h', fig.align='center', fig.height=5}
+st1807 <- create_net_data3(edge_data = from_to, node_data = ports, variable = "yearam", value = 1807, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+mp + geom_net(data= st1807, layout = NULL, directed = TRUE, 
+              ealpha = .3, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              color = natinimp, arrowsize = arrowsize, group = natinimp)) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") + 
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+
+```
+
+## Country with most trips: Great Britain
+
+```{r mosttrips2, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="All slave trade voyages by British ships, 1562-1809. Color represents the century in which the ship departed Africa with slaves.", fig.pos='h', fig.align='center', fig.height=5}
+stgb <- create_net_data3(edge_data = from_to, node_data = ports, variable = "natinimp", value = 'Great Britain', from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+
+# mp + geom_net(data= stgb, layout = NULL, directed = TRUE, ealpha = .2, arrowgap = 1, 
+#          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+#              color = as.factor(century), group = century, arrowsize= arrowsize)) + 
+#  scale_color_brewer(palette = 'Spectral', name = 'Century') + 
+#  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+```
+
+## Country with 2^nd^ most trips: Portugal
+
+```{r portugal, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="Slave trading voyages by Portuguese ships from 1525-1854. Color represents the century in which the ship departed Africa with slaves.", fig.pos='h'}
+portugal <- create_net_data3(edge_data = from_to, node_data = ports, variable = "natinimp", value = "Portugal / Brazil", from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+
+mp + geom_net(data= portugal, layout = NULL, directed = TRUE, ealpha = .1, arrowgap = 1,
+          aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+              color = as.factor(century), group = century)) + 
+  scale_color_brewer(palette = 'Spectral', name = 'Century') +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+```
+
+## US Ships and Deaths of Captives
+
+```{r slaves_usa, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "All slave trade ship voyages by U.S. ships. Size and color of points represents the number of slaves embarked and disembarked on each voyage.", fig.pos='h', fig.align='center', fig.height=5}
+  usa <- subset(from_to, natinimp == 'USA')
+  usa$arrowlength <- 1
+  usa2 <- usa
+  usa2[,"mjbyptimp"] <- usa[,"mjslptimp"]
+  usa2[,"mjslptimp"] <- usa[,"mjbyptimp"]
+  usa2$slaximp <- usa$slamimp
+  usa2$arrowlength <- 0
+  usa3 <- rbind(usa, usa2)
+  nodes1 <- unique(as.character(usa3$mjbyptimp))
+  nodes2 <- unique(as.character(usa3$mjslptimp))
+  nodes <- unique(c(nodes1, nodes2))
+  node_idx <- which(ports$name %in% nodes)
+  ports3 <- ports[node_idx,]
+  usa_death_data <- merge(usa3, ports, by.x = "mjbyptimp", by.y = "name", all = T)
+
+# mp + geom_net(data= usa_death_data, layout = NULL, 
+#               ealpha = .1, arrowgap = 1, directed = TRUE,
+#               aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+#                    size = slaximp, arrowsize = arrowlength, colour = slaximp)) +
+#   scale_color_gradient(low = 'red', high = 'blue', name = "Number of Slaves") +
+#   scale_size_continuous(name = 'Number of Slaves') + 
+#   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50)) 
+```
+
+## First Years of the Slave Trade
+
+```{r first_years, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All ships arriving in the Americas in the first 75 years of the slave trade, from 1525-1600.", fig.pos='h', fig.height=5, fig.align='center'}
+firstyears75 <- create_net_data3(edge_data = subset(from_to, yearam %in% c(1525:1600)), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+firstyears75$label <- NA
+firstyears75$label[which(firstyears75$arrowsize == 1)] <- firstyears75$mjbyptimp[which(firstyears75$arrowsize == 1)]
+firstyears75$label[which(is.na(firstyears75$label))] <- firstyears75$mjslptimp[which(firstyears75$arrowsize == 1)]
+firstyears75$label <- sub(", port unspecified", '', firstyears75$label)
+
+
+mp + geom_net(data= firstyears75, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE, vjust = 1,hjust=-.05, labelcolour = 'black',
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, color = natinimp, group = natinimp#, label = label
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-25,30)) 
+```
+
+## US Ships after Legal Slave Trade
+
+```{r us1808, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All US ships still participating in the slave trade after its ban in the US in 1807.", fig.pos='h', fig.height=5, fig.align='center'}
+us1808 <- create_net_data3(edge_data = filter(from_to, natinimp == "USA", yearam >=1808), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+us1808$label <- ""
+us1808$label[which(us1808$arrowsize == 1)] <- us1808$yearaf[which(us1808$arrowsize == 1)]
+us1808$label[which(us1808$arrowsize == 0)] <- us1808$yearam[which(us1808$arrowsize == 0)]
+
+mp + geom_net(data= us1808, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE,  vjust = runif(175,-2,0),hjust=runif(175,0,1), labelcolour = 'navy', size = .5,
+              color = 'navy',
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, label = label
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
+```
+
+## Illegal Slave Trade
+
+```{r postban, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="All slave trade expeditions that took place after the practice was outlawed in all of the countries that participated.", fig.pos='h', fig.height=5, fig.align='center'}
+postban <- create_net_data3(edge_data = filter(from_to, yearam >=1837), node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+#postban$label <- ""
+#postban$label[which(postban$arrowsize == 1)] <- postban$yearaf[which(postban$arrowsize == 1)]
+#postban$label[which(postban$arrowsize == 0)] <- postban$yearam[which(postban$arrowsize == 0)]
+
+mp + geom_net(data= postban, layout = NULL, ealpha = .4, arrowgap = 1, 
+              directed = TRUE,
+              aes(x=longitude, y = latitude, from_id = mjbyptimp, to_id=mjslptimp,
+                   arrowsize = arrowsize, color = natinimp, group = natinimp
+                  )) +
+  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+  theme(legend.position = 'bottom') + lims(x = c(-100,75), y = c(-50,50)) 
+```
+
+## Spanish Slave Trade Network
+
+```{r spain, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="The network of slave trade by Spanish ships from 1593 to 1859.", fig.pos='h', fig.height=5, fig.align='center'}
+spain <- create_net_data3(edge_data = from_to, node_data = ports, variable ="natinimp", value = "Spain / Uruguay", from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
+spain$mjbyptimp <- sub(', port unspecified', '', spain$mjbyptimp)
+spain$mjslptimp <- sub(', port unspecified', '', spain$mjslptimp)
+spain$label <- ""
+spain$label[c(1, 25, 37,46, 93,96, 129, 207,284,285,466,467, 596,689,819, 886)] <- spain$mjbyptimp[c(1, 25, 37,46, 93,96, 129, 207,284,285,466,467, 596,689,819,886)] 
+
+set.seed(3)
+ggplot() + geom_net(data= spain, directed = TRUE, layout = 'fruchtermanreingold',ealpha = .2, arrowgap = .01, vjust = -.2, size = 1, labelcolour = '#fb6a4a',
+          aes(from_id = mjbyptimp, to_id=mjslptimp, arrowsize= arrowsize, label = label, linewidth = slaximp/110)) + lims(x = c(-.01,1.01), y = c(-.01,1.01))
+```
+
+## Conclusion
+
+>- Come away with a deeper understanding of the slave trade
+>- Points on the map shrink after crossing the ocean, huge numbers of trips made to the Caribbean -- brings weight the horror of the slave trade
+>- The last slaving ship disembarked in Cuba 151 years ago, but the trans-Atlantic slave trade persisted for more than twice that amount of time. 
+>- Lasting impact on the Americas 
+>- Hopeful that the visualizations bring that impact to the forefront of the viewer's mind. 
