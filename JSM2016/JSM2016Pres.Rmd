@@ -292,11 +292,31 @@ create_net_data3 <- function(edge_data, node_data, variable = NULL, value = NULL
   node_data <- node_data[node_idx,]
   net_data <- merge(edge_data, node_data, by.x = from_id, by.y = node_id, all = T)
 }
+
+myborders <- function(xlim=c(-105,75), ylim = c(-50,50)) {
+  paths <- borders("world", colour="gray50", fill=NA,
+          xlim=xlim, ylim = ylim)
+  data <- paths$data
+  data$long <- pmax(data$long, min(xlim))
+  data$long <- pmin(data$long, max(xlim))
+  data$lat <- pmax(data$lat, min(ylim))
+  data$lat <- pmin(data$lat, max(ylim))
+  paths$data <- data
+  paths
+}
+
+mp <- NULL
+#mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
+mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
+mp <- ggplot() +   mapWorld
+theme_set(theme_bw())
 ```
 
 ## Entire Network, 1525 - 1864
 
-```{r entirenetwork, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1525 - 1864.", fig.pos='h', fig.height=5, fig.align='center'}
+![](imagesfrompaper/whole_dataset_plot-1.pdf)
+
+```{r entirenetwork, echo = FALSE, message=FALSE,warning=FALSE, fig.cap="The entire network of completed slave ship trips from Africa to the Americas from 1525 - 1864.", fig.pos='h', fig.height=5, fig.align='center', eval = FALSE}
 library(ggplot2)
 library(geomnet)
 
@@ -315,7 +335,7 @@ myborders <- function(xlim=c(-105,75), ylim = c(-50,50)) {
 mp <- NULL
 #mapWorld <- borders("world", colour="gray50", fill=NA) # create a layer of borders
 mapWorld <- myborders(xlim=c(-105,75), ylim = c(-50,50))
-mp <- ggplot() +   mapWorld 
+mp <- ggplot() +   mapWorld
 theme_set(theme_bw())
 
 slavenet_all <- create_net_data3(edge_data = from_to, node_data = ports, variable = NULL, value = NULL, from_id = "mjbyptimp" , to_id = "mjslptimp", node_id = "name")
@@ -338,20 +358,22 @@ mp + geom_net(data= slavenet_all, layout = NULL,
   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
 
-ggplot() + geom_net(data= slavenet_all, 
-              directed = TRUE, ealpha = .1, arrowgap = 1,
-          aes(#x=longitude, y = latitude,
-              from_id = mjbyptimp, to_id=mjslptimp,
-              color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
-  scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
-  theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
-# 
-fuck <- cbind(slavenet_all[1:(nrow(slavenet_all)/2),], slavenet_all[(nrow(slavenet_all)/2+1):nrow(slavenet_all),])
-names(fuck)[33:34] <- c("lat2", "long2")
-names(fuck)[7] <- "natinimp1"
-ggplot() + geom_point(data= slavenet_all,
-                      aes(x=longitude, y = latitude, color = natinimp) ) + 
-  geom_segment(data = fuck, aes(x = longitude, xend = long2, y = latitude, yend = lat2, color = natinimp1))
+
+#### TRYING TO FIX  #######
+# ggplot() + geom_net(data= slavenet_all, 
+#               directed = TRUE, ealpha = .1, arrowgap = 1,
+#           aes(#x=longitude, y = latitude,
+#               from_id = mjbyptimp, to_id=mjslptimp,
+#               color = natinimp, arrowsize = 2*arrowsize, group = natinimp)) +
+#   scale_color_brewer(palette = 'Set1', name = "Ship's Nation") +
+#   theme(legend.position = 'bottom') + lims(x = c(-105,75), y = c(-50,50))
+# # 
+# fuck <- cbind(slavenet_all[1:(nrow(slavenet_all)/2),], slavenet_all[(nrow(slavenet_all)/2+1):nrow(slavenet_all),])
+# names(fuck)[33:34] <- c("lat2", "long2")
+# names(fuck)[7] <- "natinimp1"
+# ggplot() + geom_point(data= slavenet_all,
+#                       aes(x=longitude, y = latitude, color = natinimp) ) + 
+#   geom_segment(data = fuck, aes(x = longitude, xend = long2, y = latitude, yend = lat2, color = natinimp1))
 
 # mp + geom_point(data= from_to_lat, aes(x=longitude.x, y = latitude.x)) +
 #   geom_point(data= from_to_lat, aes(x=longitude.y, y = latitude.y)) +
