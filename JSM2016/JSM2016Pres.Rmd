@@ -104,7 +104,7 @@ ggplot(data = combined) + geom_net(aes(from_id = from_id, to_id=to_id,
 
 ```{r cleandata, echo=FALSE, cache=TRUE, message=FALSE,warning=FALSE}
 library(foreign)
-setwd("~/Desktop/NetworksResearch/SlaveTradeDatabase")
+#setwd("~/Desktop/NetworksResearch/SlaveTradeDatabase")
 st <- read.spss("tastdb-exp-2010.sav")
 labels <- attr(st, "label.table")
 fulldata <- data.frame(st)
